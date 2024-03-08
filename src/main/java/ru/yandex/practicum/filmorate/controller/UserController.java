@@ -47,7 +47,7 @@ public class UserController {
             isValidUser(user);
             User notUpdatedUser = users.get(user.getId());
             users.put(user.getId(), user);
-            log.info("Информация о пользователе обновлена:\n Было: {} \nСтало: {}\n", notUpdatedUser, user);
+            log.info("Информация о пользователе обновлена:\n Было: {} \n Стало: {}\n", notUpdatedUser, user);
             return user;
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
