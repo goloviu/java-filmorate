@@ -15,10 +15,8 @@ public class User {
     private Integer id;
     @NotBlank(message = "email пользователя не должен быть пустой, состоять из пробелов или неопределяться(null)")
     @Email(message = "Неверный формат записи почты пользователя")
-    @NonNull
     private String email;
     @NotBlank(message = "Логин не может быть пустым и содержать пробелы")
-    @NonNull
     private String login;
     @NonNull
     private String name;

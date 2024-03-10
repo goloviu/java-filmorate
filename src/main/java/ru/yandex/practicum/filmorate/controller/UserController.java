@@ -23,40 +23,34 @@ public class UserController {
     private HashMap<Integer, User> users = new HashMap<>();
 
     @PostMapping
-    public User addUser(@Valid @NonNull @RequestBody User user) {
-        if (user.getId() == null && !users.containsValue(user)) {
-            isValidUser(user);
-            user.setId(generateUserId());
-            users.put(user.getId(), user);
-            log.info("Добавлен пользователь: {}", user);
-            return user;
-        } else {
+    public User addUser(@Valid @RequestBody User user) {
+        if (user.getId() != null && users.containsValue(user)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+
+        isValidUser(user);
+        user.setId(generateUserId());
+        users.put(user.getId(), user);
+        log.info("Добавлен пользователь: {}", user);
+        return user;
     }
 
     @PutMapping
-    public User addOrUpdateUser(@Valid @NonNull @RequestBody User user) {
-        if (user.getId() == null && !users.containsValue(user)) {
-            isValidUser(user);
-            user.setId(generateUserId());
-            users.put(user.getId(), user);
-            log.info("Добавлен пользователь: {}", user);
-            return user;
-        } else if (user.getId() != null && users.containsKey(user.getId())) {
-            isValidUser(user);
-            User notUpdatedUser = users.get(user.getId());
-            users.put(user.getId(), user);
-            log.info("Информация о пользователе обновлена:\n Было: {} \n Стало: {}\n", notUpdatedUser, user);
-            return user;
-        } else {
+    public User updateUser(@Valid @RequestBody User user) {
+       if (user.getId() == null || !users.containsKey(user.getId())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+
+        isValidUser(user);
+        User notUpdatedUser = users.get(user.getId());
+        users.put(user.getId(), user);
+        log.info("Информация о пользователе обновлена:\n Было: {} \n Стало: {}\n", notUpdatedUser, user);
+        return user;
     }
 
     @GetMapping
     public List<User> getUsers() {
-        log.info("Получен список пользователей");
+        log.info("Получен GET запрос на нахождение всех пользователей");
         return new ArrayList<>(users.values());
     }
 

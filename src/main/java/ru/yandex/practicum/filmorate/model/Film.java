@@ -13,11 +13,9 @@ public class Film {
     @EqualsAndHashCode.Exclude
     private Integer id;
     @NotBlank(message = "Название фильма не может быть пустым или содержать только пробелы")
-    @NonNull
     private String name;
     @NotNull(message = "Описание фильма не задано(null)")
     @Size(max = 200, message = "Размер описания фильма не может превышать 200 символов")
-    @NonNull
     private String description;
     @NonNull
     private LocalDate releaseDate;

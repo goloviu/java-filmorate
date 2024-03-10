@@ -24,40 +24,34 @@ public class FilmController {
     private HashMap<Integer, Film> films = new HashMap<>();
 
     @PostMapping
-    public Film addFilm(@Valid @NonNull @RequestBody Film film) {
-        if (film.getId() == null && !films.containsValue(film)) {
-            isValidFilm(film);
-            film.setId(generateFilmId());
-            films.put(film.getId(), film);
-            log.info("Добавлен фильм: {}", film);
-            return film;
-        } else {
+    public Film addFilm(@Valid @RequestBody Film film) {
+        if (film.getId() != null && films.containsValue(film)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+
+        isValidFilm(film);
+        film.setId(generateFilmId());
+        films.put(film.getId(), film);
+        log.info("Добавлен фильм: {}", film);
+        return film;
     }
 
     @PutMapping
-    public Film addOrUpdateFilm(@Valid @NonNull @RequestBody Film film) {
-        if (film.getId() == null && !films.containsValue(film)) {
-            isValidFilm(film);
-            film.setId(generateFilmId());
-            films.put(film.getId(), film);
-            log.info("Добавлен фильм: {}", film);
-            return film;
-        } else if (film.getId() != null && films.containsKey(film.getId())) {
-            isValidFilm(film);
-            Film notUpdatedFilm = films.get(film.getId());
-            films.put(film.getId(), film);
-            log.info("Информация о фильме обновлена:\nБыло: {} \nСтало: {}\n", notUpdatedFilm, film);
-            return film;
-        } else {
+    public Film updateFilm(@Valid @RequestBody Film film) {
+        if (film.getId() == null || !films.containsKey(film.getId())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+
+        isValidFilm(film);
+        Film notUpdatedFilm = films.get(film.getId());
+        films.put(film.getId(), film);
+        log.info("Информация о фильме обновлена:\nБыло: {} \nСтало: {}\n", notUpdatedFilm, film);
+        return film;
     }
 
     @GetMapping
     public List<Film> getFilms() {
-        log.info("Получен список фильмов");
+        log.info("Получен GET запрос на нахождения всех фильмов");
         return new ArrayList<>(films.values());
     }
 
