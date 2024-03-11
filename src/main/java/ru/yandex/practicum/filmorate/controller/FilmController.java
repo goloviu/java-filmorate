@@ -20,13 +20,11 @@ public class FilmController {
 
     private static final LocalDate FIRST_FILM_DATE = LocalDate.parse("1895-12-28");
     private int filmId = 1;
-    private HashMap<Integer, Film> films = new HashMap<>();
+    private final static HashMap<Integer, Film> films = new HashMap<>();
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
-        if (film.getId() != null && films.containsValue(film)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        checkExistFilmForAddFilm(film);
 
         isValidFilm(film);
         film.setId(generateFilmId());
@@ -37,9 +35,7 @@ public class FilmController {
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        if (film.getId() == null || !films.containsKey(film.getId())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        checkExistFilmForUpdateFilm(film);
 
         isValidFilm(film);
         Film notUpdatedFilm = films.get(film.getId());
@@ -62,6 +58,18 @@ public class FilmController {
         if (film.getReleaseDate().isBefore(FIRST_FILM_DATE)) {
             log.debug("Дата релиза фильма указана раньше 28 Декабря 1895 года: {}", film);
             throw new ValidationException("Дата релиза фильма не может быть до 28 Декабря 1895 года");
+        }
+    }
+
+    private void checkExistFilmForAddFilm(final Film film) {
+        if (film.getId() != null && films.containsValue(film)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private void checkExistFilmForUpdateFilm(final Film film) {
+        if (film.getId() == null || !films.containsKey(film.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 }

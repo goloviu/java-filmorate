@@ -19,13 +19,11 @@ import java.util.List;
 public class UserController {
 
     private int userId = 1;
-    private HashMap<Integer, User> users = new HashMap<>();
+    private final static HashMap<Integer, User> users = new HashMap<>();
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
-        if (user.getId() != null && users.containsValue(user)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        checkExistUserForAddUser(user);
 
         isValidUser(user);
         user.setId(generateUserId());
@@ -36,9 +34,7 @@ public class UserController {
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-       if (user.getId() == null || !users.containsKey(user.getId())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+       checkExistUserForUpdateUser(user);
 
         isValidUser(user);
         User notUpdatedUser = users.get(user.getId());
@@ -65,6 +61,18 @@ public class UserController {
         if (user.getBirthday().isAfter(LocalDate.now())) {
             log.debug("Дата рождения не может быть в будущем: {}", user);
             throw new ValidationException("Дата рождения не может быть в будущем");
+        }
+    }
+
+    private void checkExistUserForAddUser(final User user) {
+        if (user.getId() != null && users.containsValue(user)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private void checkExistUserForUpdateUser(final User user) {
+        if (user.getId() == null || !users.containsKey(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 }
