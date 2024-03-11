@@ -19,7 +19,7 @@ import java.util.List;
 public class UserController {
 
     private int userId = 1;
-    private final static HashMap<Integer, User> users = new HashMap<>();
+    private static final  HashMap<Integer, User> users = new HashMap<>();
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {

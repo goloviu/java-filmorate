@@ -20,7 +20,7 @@ public class FilmController {
 
     private static final LocalDate FIRST_FILM_DATE = LocalDate.parse("1895-12-28");
     private int filmId = 1;
-    private final static HashMap<Integer, Film> films = new HashMap<>();
+    private static final HashMap<Integer, Film> films = new HashMap<>();
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
