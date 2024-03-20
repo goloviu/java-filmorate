@@ -89,7 +89,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    private void isValidUser(User user) {
+    public void isValidUser(User user) {
         if (user.getName() == null || user.getName().isEmpty() || user.getName().isBlank()) {
             user.setName(user.getLogin());
             log.debug("Пустое имя пользователя заменено на логин: {}", user);

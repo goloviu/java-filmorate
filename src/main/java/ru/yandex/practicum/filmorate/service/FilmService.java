@@ -87,7 +87,7 @@ public class FilmService {
         return films.getFilmById(filmId);
     }
 
-    private void isValidFilm(Film film) {
+    public void isValidFilm(Film film) {
         if (film.getReleaseDate().isBefore(FIRST_FILM_DATE)) {
             log.debug("Дата релиза фильма указана раньше 28 Декабря 1895 года: {}", film);
             throw new ValidationException("Дата релиза фильма не может быть до 28 Декабря 1895 года");
