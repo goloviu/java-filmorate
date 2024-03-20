@@ -4,6 +4,8 @@ import lombok.*;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor // для сериализации Json в объект
@@ -22,5 +24,5 @@ public class Film {
     @Positive(message = "Продолжительность фильма не может быть отрицательной")
     @NonNull
     private Integer duration;
-
+    private Set<Integer> usersLikes = new HashSet<>();
 }
