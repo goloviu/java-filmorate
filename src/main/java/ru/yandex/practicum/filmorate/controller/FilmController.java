@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.NullDataException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -24,15 +23,14 @@ public class FilmController {
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
-        log.info("Получен POST запрос на добавление нового фильма в базу данных");
-        nullableFilm(film);
+        log.info("Получен POST запрос на добавление нового фильма в базу данных: {}", film);
         return filmService.add(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        log.info("Получен PUT запрос за обновление информации о фильме");
-        nullableFilm(film);
+        log.info("Получен PUT запрос за обновление информации о фильме. Было:\n{}\n Стало:\n {}",
+                filmService.getFilmById(film.getId()), film);
         return filmService.updateFilm(film);
     }
 
@@ -44,31 +42,26 @@ public class FilmController {
 
     @GetMapping("/{filmId}")
     public Film getFilmById(@PathVariable Integer filmId) {
-        log.info("Получен GET запрос на нахождения фильма по ID");
+        log.info("Получен GET запрос на нахождения фильма по ID: {}", filmId);
         return filmService.getFilmById(filmId);
     }
 
     @PutMapping("/{filmId}/like/{userId}")
     public List<Integer> addLikeToFilm(@PathVariable Integer filmId, @PathVariable Integer userId) {
-        log.info("Получен PUT запрос на добавление лайка к фильму");
+        log.info("Получен PUT запрос на добавление лайка к фильму по ID: {} Пользователем по ID: {}", filmId, userId);
         return filmService.addLike(filmId, userId);
     }
 
     @DeleteMapping("/{filmId}/like/{userId}")
     public List<Integer> removeLikeFromFilm(@PathVariable Integer filmId, @PathVariable Integer userId) {
-        log.info("Получен DELETE запрос на удаление лайка у фильма");
+        log.info("Получен DELETE запрос на удаление лайка у фильма по ID: {} Пользователем по ID: {}", filmId, userId);
         return filmService.removeLike(filmId, userId);
     }
 
     @GetMapping("/popular")
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") Integer count) {
-        log.info("Получен GET запрос на получения популярных по лайкам фильмов");
+        log.info("Получен GET запрос на получения популярных по лайкам фильмов с ограничением вывода '{}' фильмов",
+                count);
         return filmService.getPopularFilmsByLikes(count);
-    }
-
-    private void nullableFilm(final Film film) {
-        if (film == null) {
-            throw new NullDataException("Данные о фильме не указаны");
-        }
     }
 }

@@ -16,7 +16,7 @@ import java.util.List;
 public class InMemoryFilmStorage implements FilmStorage {
 
     private int filmId = 1;
-    private static final HashMap<Integer, Film> films = new HashMap<>();
+    private final HashMap<Integer, Film> films = new HashMap<>();
 
     @Override
     public Film add(final Film film) {
@@ -46,13 +46,15 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
+    @Override
     public Film getFilmById(final Integer filmId) {
         if (!films.containsKey(filmId)) {
-            throw new FilmNotFoundException("Фильм с не найден: " + filmId);
+            throw new FilmNotFoundException("Фильм не найден ID: " + filmId);
         }
         return films.get(filmId);
     }
 
+    @Override
     public List<Film> getAllFilms() {
         log.info("Список всех фильмов передан в сервис");
         return new ArrayList<>(films.values());

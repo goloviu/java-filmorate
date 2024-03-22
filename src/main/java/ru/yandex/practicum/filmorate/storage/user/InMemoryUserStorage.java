@@ -45,6 +45,7 @@ public class InMemoryUserStorage implements UserStorage {
         return user;
     }
 
+    @Override
     public User getUserById(final Integer userId) {
         if (!users.containsKey(userId)) {
             throw new UserNotFoundException("Пользователь не найден: " + userId);
@@ -52,9 +53,15 @@ public class InMemoryUserStorage implements UserStorage {
         return users.get(userId);
     }
 
+    @Override
     public List<User> getAllUsers() {
         log.info("Список всех пользователей передан в сервис");
         return new ArrayList<>(users.values());
+    }
+
+    @Override
+    public boolean isUserExist(final Integer userId) {
+        return users.containsKey(userId);
     }
 
     private Integer generateUserId() {
@@ -71,9 +78,5 @@ public class InMemoryUserStorage implements UserStorage {
         if (user.getId() == null || !users.containsKey(user.getId())) {
             throw new UserNotFoundException("Пользователь не найден: " + user.getId());
         }
-    }
-
-    public boolean isUserExist(final Integer userId) {
-        return users.containsKey(userId);
     }
 }
