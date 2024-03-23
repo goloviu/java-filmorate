@@ -1,16 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -18,61 +14,62 @@ import java.util.List;
 @Slf4j
 public class UserController {
 
-    private int userId = 1;
-    private static final  HashMap<Integer, User> users = new HashMap<>();
+    private final UserService userService;
+
+    @Autowired
+    public UserController(final UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
-        checkExistUserForAddUser(user);
-
-        isValidUser(user);
-        user.setId(generateUserId());
-        users.put(user.getId(), user);
-        log.info("Добавлен пользователь: {}", user);
-        return user;
+        log.info("Получен POST запрос на добавление нового пользователя в базу данных: {}", user);
+        return userService.addUser(user);
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-       checkExistUserForUpdateUser(user);
-
-        isValidUser(user);
-        User notUpdatedUser = users.get(user.getId());
-        users.put(user.getId(), user);
-        log.info("Информация о пользователе обновлена:\n Было: {} \n Стало: {}\n", notUpdatedUser, user);
-        return user;
+        log.info("Получен PUT запрос на обновление пользователя. Было:\n{}\n Стало:\n {}",
+                userService.getUserById(user.getId()), user);
+        return userService.updateUser(user);
     }
 
     @GetMapping
     public List<User> getUsers() {
         log.info("Получен GET запрос на нахождение всех пользователей");
-        return new ArrayList<>(users.values());
+        return userService.getAllUsers();
     }
 
-    private Integer generateUserId() {
-        return userId++;
+    @GetMapping("/{userId}")
+    public User getFilmById(@PathVariable Integer userId) {
+        log.info("Получен GET запрос на нахождение пользователя по ID: {}", userId);
+        return userService.getUserById(userId);
     }
 
-    protected void isValidUser(User user) {
-        if (user.getName() == null || user.getName().isEmpty() || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-            log.debug("Пустое имя пользователя заменено на логин: {}", user);
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.debug("Дата рождения не может быть в будущем: {}", user);
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
+    @PutMapping("/{userId}/friends/{otherUserId}")
+    public User addToFriend(@PathVariable Integer userId, @PathVariable Integer otherUserId) {
+        log.info("Получен PUT запрос на добавление в друзья пользователя ID: {} от пользователя ID: {}",
+                otherUserId, userId);
+        return userService.addToFriends(userId, otherUserId);
     }
 
-    private void checkExistUserForAddUser(final User user) {
-        if (user.getId() != null && users.containsValue(user)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+    @DeleteMapping("/{userId}/friends/{otherUserId}")
+    public User removeFromFriends(@PathVariable Integer userId, @PathVariable Integer otherUserId) {
+        log.info("Получен DELETE запрос на удаление из друзей пользователя ID: {} от пользователя ID: {}",
+                otherUserId, userId);
+        return userService.removeFromFriends(userId, otherUserId);
     }
 
-    private void checkExistUserForUpdateUser(final User user) {
-        if (user.getId() == null || !users.containsKey(user.getId())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+    @GetMapping("/{userId}/friends")
+    public List<User> getAllUserFriends(@PathVariable Integer userId) {
+        log.info("Получен GET запрос на получения списка друзей пользователя ID: {}", userId);
+        return userService.getUserFriends(userId);
+    }
+
+    @GetMapping("/{userId}/friends/common/{otherUserId}")
+    public List<User> getCommonFriendsWithOtherUser(@PathVariable Integer userId, @PathVariable Integer otherUserId) {
+        log.info("Получен GET запрос на получения списка общих друзей с пользователем ID: {} от пользователя ID: {}",
+                otherUserId, userId);
+        return userService.getCommonFrineds(userId, otherUserId);
     }
 }
