@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
@@ -35,10 +36,23 @@ public class UserService {
         return userStorage.updateUser(user);
     }
 
+    public User addToRequestFriends(final Integer userId, final Integer friendId) {
+        User friend = userStorage.getUserById(friendId);
+
+        friend.getFriendsRequests().add(userId);
+        return friend;
+    }
+
     public User addToFriends(final Integer userId, final Integer friendId) {
         User user = userStorage.getUserById(userId);
         User friend = userStorage.getUserById(friendId);
 
+        if (!user.getFriendsRequests().contains(friendId)) {
+            throw new UserNotFoundException("В запросах на добавление в друзья пользователь с данным ID не найден: "
+            + friendId);
+        }
+
+        user.getFriendsRequests().remove(friendId);
         user.getFriends().add(friendId);
         friend.getFriends().add(userId);
         return friend;
