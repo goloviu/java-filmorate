@@ -29,4 +29,7 @@ public class Film {
     @NonNull
     private FilmRating rating;
     private Set<Integer> usersLikes = new HashSet<>();
+
+    public <T> Film(int i, String javaDeveloper, String aboutStrongJavaDeveloper, LocalDate parse, int i1, Set<T> ts) {
+    }
 }

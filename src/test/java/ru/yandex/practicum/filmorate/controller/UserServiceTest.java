@@ -25,7 +25,7 @@ class UserServiceTest {
     public void testisValidUserShouldUseLoginWhenNameIsNull() {
         // given
         User user = new User(0, "foo@bar.test", "test", "", LocalDate.parse("1999-09-05"),
-                Collections.emptySet());
+                Collections.emptySet(), Collections.emptySet());
 
         // do
         assertTrue(user.getName().isEmpty(), "Имя пользователя должно быть пустое");
@@ -41,7 +41,7 @@ class UserServiceTest {
     public void testisValidUserShouldNotReplaceLoginToNameWhenNameIsNotNull() {
         // given
         User user = new User(0, "foo@bar.test", "foo", "bar", LocalDate.parse("1999-09-05"),
-                Collections.emptySet());
+                Collections.emptySet(), Collections.emptySet());
 
         // do
         assertFalse(user.getName().isEmpty(), "Имя пользователя не должно быть пустое");
@@ -63,7 +63,7 @@ class UserServiceTest {
     public void testisValidUserShouldThrowValidationExceptionWhenUserBirthdayInFuture() {
         // given
         User user = new User(0, "foo@bar.test", "foo", "bar", LocalDate.now().plusDays(1),
-                Collections.emptySet());
+                Collections.emptySet(), Collections.emptySet());
 
         // expect
         ValidationException exception = assertThrows(ValidationException.class,
@@ -76,7 +76,7 @@ class UserServiceTest {
     public void testisValidUserShouldNotThrowValidationExceptionWhenUserBirthdayInPast() {
         // given
         User user = new User(0, "foo@bar.test", "foo", "bar", LocalDate.now().minusDays(1),
-                Collections.emptySet());
+                Collections.emptySet(), Collections.emptySet());
 
         // expect
         assertDoesNotThrow(() -> userService.isValidUser(user),

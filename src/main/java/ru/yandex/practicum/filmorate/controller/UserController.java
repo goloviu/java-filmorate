@@ -41,7 +41,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public User getFilmById(@PathVariable Integer userId) {
+    public User getUserById(@PathVariable Integer userId) {
         log.info("Получен GET запрос на нахождение пользователя по ID: {}", userId);
         return userService.getUserById(userId);
     }
