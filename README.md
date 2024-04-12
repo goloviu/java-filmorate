@@ -7,7 +7,7 @@ java-filmorate
 * Java 11
 * Spring Boot
 * Maven
-* PostgreSQL
+* H2
 ---
 ## Схема базы данных и примеры запросов
 
