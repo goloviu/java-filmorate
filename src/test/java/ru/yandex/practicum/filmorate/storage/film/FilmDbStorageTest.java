@@ -44,20 +44,20 @@ class FilmDbStorageTest {
     }
 
     private List<FilmRating> getRatingList() {
-        return List.of(new FilmRating(1, "G")
-                , new FilmRating(2, "PG")
-                , new FilmRating(3, "PG-13")
-                , new FilmRating(4, "R")
-                , new FilmRating(5, "NC-17"));
+        return List.of(new FilmRating(1, "G"),
+                new FilmRating(2, "PG"),
+                new FilmRating(3, "PG-13"),
+                new FilmRating(4, "R"),
+                new FilmRating(5, "NC-17"));
     }
 
     private List<FilmGenre> getGenresList() {
-        return List.of(new FilmGenre(1, "Комедия")
-                , new FilmGenre(2, "Драма")
-                , new FilmGenre(3, "Мультфильм")
-                , new FilmGenre(4, "Триллер")
-                , new FilmGenre(5, "Документальный")
-                , new FilmGenre(6, "Боевик"));
+        return List.of(new FilmGenre(1, "Комедия"),
+                new FilmGenre(2, "Драма"),
+                new FilmGenre(3, "Мультфильм"),
+                new FilmGenre(4, "Триллер"),
+                new FilmGenre(5, "Документальный"),
+                new FilmGenre(6, "Боевик"));
     }
 
     @Test
