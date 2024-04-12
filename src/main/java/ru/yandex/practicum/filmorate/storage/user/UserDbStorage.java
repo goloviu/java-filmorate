@@ -43,8 +43,8 @@ public class UserDbStorage implements UserStorage {
         String sqlDeleteUser = "DELETE FROM users WHERE id = ?";
 
         jdbcTemplate.update(sqlDeleteUser, user.getId());
-        log.info("Пользователь по ID: {} и инфомрация о друзьях была удалена из базы данных в таблицах users, friends"
-                , user.getId());
+        log.info("Пользователь по ID: {} и инфомрация о друзьях была удалена из базы данных в таблицах users, friends",
+                user.getId());
         return user;
     }
 

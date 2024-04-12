@@ -44,8 +44,8 @@ public class FilmDbStorage implements FilmStorage {
         String sqlDeleteFilm = "DELETE FROM movies WHERE id = ?";
 
         jdbcTemplate.update(sqlDeleteFilm, film.getId());
-        log.info("Фильм по ID: {} и лайки пользователей удалены из базы данных в таблицах movies, movie_like."
-                , film.getId());
+        log.info("Фильм по ID: {} и лайки пользователей удалены из базы данных в таблицах movies, movie_like.",
+                film.getId());
         return film;
     }
 
