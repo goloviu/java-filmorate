@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.exceptionhandler;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,7 +30,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse likeNotFoundHandle(final LikeNotFoundException exception) {
+    public ErrorResponse likeNotFoundHandle(final LikeException exception) {
         log.warn("Произошла ошибка при взаимодействии с лайком пользователя.", exception);
         return new ErrorResponse(exception.getMessage());
     }
@@ -40,17 +42,17 @@ public class ErrorHandler {
         return new ErrorResponse(exception.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler({EmptyResultDataAccessException.class, UserNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse userNotFoundHandle(final UserNotFoundException exception) {
+    public ErrorResponse userNotFoundHandle(final Throwable exception) {
         log.warn("Произошла ошибка во время поиска пользователя в базе данных.", exception);
         return new ErrorResponse(exception.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler({MethodArgumentNotValidException.class, ValidationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse validationHandle(final ValidationException exception) {
-        log.warn("Произошла ошибка передачи данных клиента серверу.", exception);
+    public ErrorResponse validationHandle(final Throwable exception) {
+        log.warn("Произошла ошибка передачи данных клиента серверу.(Ошибка валидации)", exception);
         return new ErrorResponse(exception.getMessage());
     }
 

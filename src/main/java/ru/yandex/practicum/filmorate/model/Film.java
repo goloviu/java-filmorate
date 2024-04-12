@@ -2,14 +2,18 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Data
 @NoArgsConstructor // для сериализации Json в объект
 @AllArgsConstructor
+@Builder
 public class Film {
 
     @EqualsAndHashCode.Exclude
@@ -25,11 +29,21 @@ public class Film {
     @NonNull
     private Integer duration;
     @NonNull
-    private FilmGenre genre;
+    @Valid
+    private FilmRating mpa;
     @NonNull
-    private FilmRating rating;
+    @Valid
+    private Set<FilmGenre> genres = new HashSet<>();
     private Set<Integer> usersLikes = new HashSet<>();
 
-    public <T> Film(int i, String javaDeveloper, String aboutStrongJavaDeveloper, LocalDate parse, int i1, Set<T> ts) {
+    public Map<String, Object> toMap() {
+        Map<String, Object> dbMapping = new HashMap<>();
+
+        dbMapping.put("title", this.getName());
+        dbMapping.put("description", this.getDescription());
+        dbMapping.put("duration", this.getDuration());
+        dbMapping.put("release_date", this.getReleaseDate());
+        dbMapping.put("rating_id", this.getMpa().getId());
+        return dbMapping;
     }
 }
