@@ -11,7 +11,8 @@ java-filmorate
 ---
 ## Схема базы данных и примеры запросов
 
-![Data Base Diagram](..%2F..%2FDownloads%2FUntitled.png)
+![Data Base Diagram](https://github.com/goloviu/java-filmorate/assets/147878926/eae02082-c252-4a24-b2ca-efb8a00728f4)
+
 
 #### User
 - Получение всех пользователей
