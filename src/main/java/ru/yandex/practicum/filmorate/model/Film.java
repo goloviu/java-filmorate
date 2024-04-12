@@ -24,5 +24,12 @@ public class Film {
     @Positive(message = "Продолжительность фильма не может быть отрицательной")
     @NonNull
     private Integer duration;
+    @NonNull
+    private FilmGenre genre;
+    @NonNull
+    private FilmRating rating;
     private Set<Integer> usersLikes = new HashSet<>();
+
+    public <T> Film(int i, String javaDeveloper, String aboutStrongJavaDeveloper, LocalDate parse, int i1, Set<T> ts) {
+    }
 }
