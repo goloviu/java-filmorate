@@ -90,8 +90,8 @@ class FilmDbStorageTest {
         Integer columnNum =  jdbcTemplate.queryForObject(sql, (rs, rowNum) -> (rs.getInt(1)));
         assertEquals(2, columnNum, "Количество записей больше 2х");
 
-        EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class
-                , () -> filmDbStorage.getFilmById(3), "Исключение не выброшено");
+        EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class,
+                () -> filmDbStorage.getFilmById(3), "Исключение не выброшено");
         assertEquals("Incorrect result size: expected 1, actual 0", exception.getMessage());
     }
 
