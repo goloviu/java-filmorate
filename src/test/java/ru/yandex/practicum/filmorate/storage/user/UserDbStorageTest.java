@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class UserDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
@@ -29,18 +28,6 @@ class UserDbStorageTest {
     @BeforeEach
     private void newUserStorage() {
         this.userStorage = new UserDbStorage(jdbcTemplate);
-    }
-
-    private User makeUserWithId() {
-        return User.builder()
-                .id(1)
-                .name("Test name")
-                .login("Test login")
-                .email("foo@bar.com")
-                .birthday(LocalDate.of(1990, 1, 1))
-                .friends(Collections.emptySet())
-                .friendsRequests(Collections.emptySet())
-                .build();
     }
 
     private User makeUserWithoutId() {
@@ -57,10 +44,10 @@ class UserDbStorageTest {
     @Test
     void testAddUser_ShouldSaveUserToDb_WhenUserIsNotNull() {
         //given
-        User user = makeUserWithId();
+        User user = makeUserWithoutId();
         //do
-        userStorage.addUser(user);
-        User savedUser = userStorage.getUserById(1);
+        Integer userId = userStorage.addUser(user).getId();
+        User savedUser = userStorage.getUserById(userId);
         savedUser.setFriendsRequests(Collections.emptySet());
         savedUser.setFriends(Collections.emptySet());
         //expect
@@ -99,12 +86,14 @@ class UserDbStorageTest {
     void testUpdateUser_ShouldChangeNewUserNameBySameUserId_WhenUserIsNotNull() {
         //given
         User user = makeUserWithoutId();
-        User userForUpdate = makeUserWithId();
+        Integer userId = userStorage.addUser(user).getId();
+
+        User userForUpdate = makeUserWithoutId();
+        userForUpdate.setId(userId);
         userForUpdate.setName("UpdatedName");
         //do
-        userStorage.addUser(user);
         userStorage.updateUser(userForUpdate);
-        User updatedUser = userStorage.getUserById(1);
+        User updatedUser = userStorage.getUserById(userId);
         //expect
         assertThat(updatedUser)
                 .isNotNull()
@@ -117,9 +106,9 @@ class UserDbStorageTest {
     void testGetUserById_ShouldReturnSavedUser_WhenUserIsNotNull() {
         //given
         User user = makeUserWithoutId();
-        userStorage.addUser(user);
+        Integer userId = userStorage.addUser(user).getId();
         //do
-        User savedUser = userStorage.getUserById(1);
+        User savedUser = userStorage.getUserById(userId);
         //expect
         assertThat(savedUser)
                 .isNotNull()

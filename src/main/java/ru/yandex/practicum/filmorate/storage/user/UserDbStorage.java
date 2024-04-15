@@ -2,14 +2,17 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -112,20 +115,42 @@ public class UserDbStorage implements UserStorage {
     }
 
     private void saveUserFriendsToDb(User user) {
-        Set<Integer> friendsRequests = user.getFriendsRequests();
-        Set<Integer> friends = user.getFriends();
+        List<Integer> friendsRequests = new ArrayList<>(user.getFriendsRequests());
+        List<Integer> friends = new ArrayList<>(user.getFriends());
         Integer userId = user.getId();
 
         String sql = "INSERT INTO friends (user_id, friend_id, status) " +
                 "VALUES (?, ?, ?)";
 
-        for (Integer userIdInRequest : friendsRequests) {
-            jdbcTemplate.update(sql, userId, userIdInRequest, false);
-        }
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                Integer friendId = friendsRequests.get(i);
+                ps.setInt(1, userId);
+                ps.setInt(2, friendId);
+                ps.setBoolean(3, false);
+            }
 
-        for (Integer friendId : friends) {
-            jdbcTemplate.update(sql, userId, friendId, true);
-        }
+            @Override
+            public int getBatchSize() {
+                return friendsRequests.size();
+            }
+        });
+
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                Integer friendId = friends.get(i);
+                ps.setInt(1, userId);
+                ps.setInt(2, friendId);
+                ps.setBoolean(3, true);
+            }
+
+            @Override
+            public int getBatchSize() {
+                return friends.size();
+            }
+        });
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {

@@ -15,7 +15,6 @@ import javax.validation.constraints.NotNull;
 public class FilmGenre {
 
     @NotNull
-    @Max(6)
     private final Integer id;
     private String name;
 }

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exceptions.LikeException;
@@ -17,6 +18,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -112,6 +114,25 @@ public class FilmService {
         if (film.getReleaseDate().isBefore(FIRST_FILM_DATE)) {
             log.debug("Дата релиза фильма указана раньше 28 Декабря 1895 года: {}", film);
             throw new ValidationException("Дата релиза фильма не может быть до 28 Декабря 1895 года");
+        }
+
+        Integer ratingId = film.getMpa().getId();
+        try {
+            filmStorage.getRatingById(ratingId);
+        } catch (EmptyResultDataAccessException e) {
+            log.debug("Неверно указан рейтинг фильма: {}", ratingId);
+            throw new ValidationException("Ошибка валидации, неверно указан рейтинг(mpa) фильма: " + ratingId);
+        }
+
+        if (!film.getGenres().isEmpty()) {
+            for (FilmGenre genre : film.getGenres()) {
+                try {
+                    filmStorage.getGenreById(genre.getId());
+                } catch (EmptyResultDataAccessException e) {
+                    log.debug("Неверно указан жанр фильма: {}", genre.getId());
+                    throw new ValidationException("Ошибка валидации, неверно указан жанр фильма: " + genre.getId());
+                }
+            }
         }
     }
 }

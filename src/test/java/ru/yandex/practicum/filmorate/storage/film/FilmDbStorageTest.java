@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class FilmDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
@@ -65,8 +64,8 @@ class FilmDbStorageTest {
         //given
         Film film = makeFilmWithoutId();
         //do
-        filmDbStorage.add(film);
-        Film savedFilm = filmDbStorage.getFilmById(1);
+        Integer filmId = filmDbStorage.add(film).getId();
+        Film savedFilm = filmDbStorage.getFilmById(filmId);
         //expect
         assertThat(savedFilm)
                 .isNotNull()
@@ -99,15 +98,16 @@ class FilmDbStorageTest {
     void testUpdate_ShouldChangeFilmNameAndDescriptionAndDurationBySameId_WhenFilmIsNotNullAndExistInTable() {
         //given
         Film film = makeFilmWithoutId();
+        Integer filmId = filmDbStorage.add(film).getId();
+
         Film filmForUpdate = makeFilmWithoutId();
-        filmForUpdate.setId(1);
+        filmForUpdate.setId(filmId);
         filmForUpdate.setName("Java island");
         filmForUpdate.setDescription("coffee place");
         filmForUpdate.setDuration(200);
-        filmDbStorage.add(film);
         //do
         filmDbStorage.update(filmForUpdate);
-        Film updatedFilm = filmDbStorage.getFilmById(1);
+        Film updatedFilm = filmDbStorage.getFilmById(filmId);
         //expect
         assertThat(updatedFilm)
                 .isNotNull()
@@ -122,9 +122,9 @@ class FilmDbStorageTest {
     void testGetFilmById_ShouldReturnSavedFilm_WhenFilmIsNotNull() {
         //given
         Film film = makeFilmWithoutId();
-        filmDbStorage.add(film);
+        Integer filmId = filmDbStorage.add(film).getId();
         //do
-        Film savedFilm = filmDbStorage.getFilmById(1);
+        Film savedFilm = filmDbStorage.getFilmById(filmId);
         //expect
         assertThat(savedFilm)
                 .isNotNull()

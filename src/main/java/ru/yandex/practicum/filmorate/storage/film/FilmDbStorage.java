@@ -2,13 +2,17 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -178,10 +182,22 @@ public class FilmDbStorage implements FilmStorage {
 
     private void addGenresToDb(final Film film) {
         String sql = "INSERT INTO movie_genre (movie_id, genre_id) VALUES (?, ?)";
+        List<FilmGenre> genres = new ArrayList<>(film.getGenres());
+        Integer filmId = film.getId();
 
-        for (FilmGenre genre : film.getGenres()) {
-            jdbcTemplate.update(sql, film.getId(), genre.getId());
-        }
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                FilmGenre genre = genres.get(i);
+                ps.setInt(1, filmId);
+                ps.setInt(2, genre.getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return genres.size();
+            }
+        });
     }
 
     private Set<FilmGenre> getGenresFromDb(final Integer filmId) {
