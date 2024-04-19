@@ -2,15 +2,16 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.exceptions.LikeNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.LikeException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -27,9 +28,10 @@ public class FilmService {
     private final UserStorage userStorage;
 
     @Autowired
-    public FilmService(InMemoryFilmStorage inMemoryFilmStorage, InMemoryUserStorage inMemoryUserStorage) {
-        filmStorage = inMemoryFilmStorage;
-        userStorage = inMemoryUserStorage;
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
     }
 
     public Film add(final Film film) {
@@ -53,7 +55,12 @@ public class FilmService {
             throw new UserNotFoundException("Пользователь не найден: " + userId);
         }
 
+        if (film.getUsersLikes().contains(userId)) {
+            throw new LikeException("Пользователь с ID:" + userId + "уже поставил лайк этому фильму");
+        }
+
         film.getUsersLikes().add(userId);
+        filmStorage.addUserLikeToFilm(userId, filmId);
         return new ArrayList<>(film.getUsersLikes());
     }
 
@@ -61,10 +68,11 @@ public class FilmService {
         Film film = filmStorage.getFilmById(filmId);
 
         if (!film.getUsersLikes().contains(userId)) {
-            throw new LikeNotFoundException("Лайк пользователя не найден по данному фильму");
+            throw new LikeException("Лайк пользователя не найден по данному фильму");
         }
 
         film.getUsersLikes().remove(userId);
+        filmStorage.removeUserLike(userId, filmId);
         return new ArrayList<>(film.getUsersLikes());
     }
 
@@ -82,6 +90,22 @@ public class FilmService {
 
     public Film getFilmById(final Integer filmId) {
         return filmStorage.getFilmById(filmId);
+    }
+
+    public List<FilmGenre> getAllGenres() {
+        return filmStorage.getAllGenres();
+    }
+
+    public FilmGenre getGenreById(final Integer genreId) {
+        return filmStorage.getGenreById(genreId);
+    }
+
+    public List<FilmRating> getAllRatings() {
+        return filmStorage.getAllRatings();
+    }
+
+    public FilmRating getRatingById(final Integer ratingId) {
+        return filmStorage.getRatingById(ratingId);
     }
 
     public void isValidFilm(Film film) {

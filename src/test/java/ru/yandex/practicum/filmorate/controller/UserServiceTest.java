@@ -2,10 +2,11 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -18,7 +19,7 @@ class UserServiceTest {
 
     @BeforeEach
     public void newController() {
-        userService = new UserService(new InMemoryUserStorage());
+        userService = new UserService(new UserDbStorage(new JdbcTemplate()));
     }
 
     @Test

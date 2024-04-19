@@ -10,6 +10,8 @@ public interface UserStorage {
 
     User removeUser(final User user);
 
+    boolean removeFriendById(final Integer userId, final Integer friendId);
+
     User updateUser(final User user);
 
     User getUserById(final Integer userId);

@@ -46,16 +46,9 @@ public class UserController {
         return userService.getUserById(userId);
     }
 
-    @PutMapping("/{userId}/friends/request/{otherUserId}")
-    public User sendRequestToFriends(@PathVariable Integer userId, @PathVariable Integer otherUserId) {
-        log.info("Получен PUT запрос на запрос на добавление в друзья пользователя ID: {} от пользователя ID: {}",
-                otherUserId, userId);
-        return userService.addToRequestFriends(userId, otherUserId);
-    }
-
     @PutMapping("/{userId}/friends/{otherUserId}")
     public User addToFriends(@PathVariable Integer userId, @PathVariable Integer otherUserId) {
-        log.info("Получен PUT запрос на подтверждение добавления в друзья пользователя ID: {} от пользователя ID: {}",
+        log.info("Получен PUT запрос на добавления в друзья пользователя ID: {} от пользователя ID: {}",
                 otherUserId, userId);
         return userService.addToFriends(userId, otherUserId);
     }
@@ -77,6 +70,6 @@ public class UserController {
     public List<User> getCommonFriendsWithOtherUser(@PathVariable Integer userId, @PathVariable Integer otherUserId) {
         log.info("Получен GET запрос на получения списка общих друзей с пользователем ID: {} от пользователя ID: {}",
                 otherUserId, userId);
-        return userService.getCommonFrineds(userId, otherUserId);
+        return userService.getCommonFriends(userId, otherUserId);
     }
 }
