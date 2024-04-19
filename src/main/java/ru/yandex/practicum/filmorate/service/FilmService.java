@@ -114,24 +114,5 @@ public class FilmService {
             log.debug("Дата релиза фильма указана раньше 28 Декабря 1895 года: {}", film);
             throw new ValidationException("Дата релиза фильма не может быть до 28 Декабря 1895 года");
         }
-
-        Integer ratingId = film.getMpa().getId();
-        try {
-            filmStorage.getRatingById(ratingId);
-        } catch (EmptyResultDataAccessException e) {
-            log.debug("Неверно указан рейтинг фильма: {}", ratingId);
-            throw new ValidationException("Ошибка валидации, неверно указан рейтинг(mpa) фильма: " + ratingId);
-        }
-
-        if (!film.getGenres().isEmpty()) {
-            for (FilmGenre genre : film.getGenres()) {
-                try {
-                    filmStorage.getGenreById(genre.getId());
-                } catch (EmptyResultDataAccessException e) {
-                    log.debug("Неверно указан жанр фильма: {}", genre.getId());
-                    throw new ValidationException("Ошибка валидации, неверно указан жанр фильма: " + genre.getId());
-                }
-            }
-        }
     }
 }

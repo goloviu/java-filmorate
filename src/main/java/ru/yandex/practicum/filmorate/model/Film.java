@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -28,8 +29,10 @@ public class Film {
     @NonNull
     private Integer duration;
     @NonNull
+    @Valid
     private FilmRating mpa;
     @NonNull
+    @Valid
     private Set<FilmGenre> genres = new HashSet<>();
     private Set<Integer> usersLikes = new HashSet<>();
 

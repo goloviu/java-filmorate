@@ -44,14 +44,14 @@ public class ErrorHandler {
 
     @ExceptionHandler({EmptyResultDataAccessException.class, UserNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse userNotFoundHandle(final Throwable exception) {
+    public ErrorResponse userNotFoundHandle(final RuntimeException exception) {
         log.warn("Произошла ошибка во время поиска пользователя в базе данных.", exception);
         return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class, ValidationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse validationHandle(final Throwable exception) {
+    public ErrorResponse validationHandle(final RuntimeException exception) {
         log.warn("Произошла ошибка передачи данных клиента серверу.(Ошибка валидации)", exception);
         return new ErrorResponse(exception.getMessage());
     }

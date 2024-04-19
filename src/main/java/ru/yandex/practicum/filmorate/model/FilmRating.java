@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -14,6 +15,7 @@ import javax.validation.constraints.NotNull;
 public class FilmRating {
 
     @NotNull
+    @Max(6)
     private final Integer id;
     private String name;
 }
