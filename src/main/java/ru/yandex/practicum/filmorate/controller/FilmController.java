@@ -67,10 +67,12 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") Integer count) {
-        log.info("Получен GET запрос на получения популярных по лайкам фильмов с ограничением вывода '{}' фильмов",
-                count);
-        return filmService.getPopularFilmsByLikes(count);
+    public List<Film> getPopularFilmsByLikes(@RequestParam(defaultValue = "10") Integer count,
+                                             @RequestParam(defaultValue = "-1") Integer genreId,
+                                             @RequestParam(defaultValue = "-1") Integer year) {
+        log.info("Получен GET запрос на получения популярных по лайкам фильмов с ограничением вывода '{}' фильмов, " +
+                        "жанр ID {}, год {}", count, genreId, year);
+        return filmService.getPopularFilms(count, genreId, year);
     }
 
     @GetMapping("/director/{directorId}")

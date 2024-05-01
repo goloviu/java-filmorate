@@ -32,6 +32,8 @@ public interface FilmStorage {
 
     FilmRating getRatingById(final Integer ratingId);
 
+    List<Film> getPopularFilms(final Integer numberOfFilms, final Integer genreId, final Integer year);
+
     boolean addUserLikeToFilm(final Integer userId, final Integer filmId);
 
     boolean removeUserLike(final Integer userId, final Integer filmId);

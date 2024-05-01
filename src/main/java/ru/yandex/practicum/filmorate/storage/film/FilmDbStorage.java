@@ -105,6 +105,44 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getPopularFilms(final Integer numberOfFilms, final Integer genreId, final Integer year) {
+        List<Film> films;
+
+        if (genreId != -1 && year != -1) {
+            String sqlGetQuery = "SELECT m.* FROM movies m\n" +
+                    "INNER JOIN movie_genre mg ON mg.movie_id = m.id\n" +
+                    "INNER JOIN genre g ON g.id = mg.genre_id\n" +
+                    "WHERE EXTRACT(YEAR FROM m.release_date) = ? AND mg.genre_id = ?";
+
+            films = jdbcTemplate.query(sqlGetQuery, this::mapRowToFilm, year, genreId);
+            log.info("Из базы данных получен список популярных {} фильмов по жанру ID {} и году {}", numberOfFilms,
+                    genreId, year);
+        } else if (genreId != -1) {
+            String sqlGetQuery = "SELECT m.* FROM movies m\n" +
+                    "INNER JOIN movie_genre mg ON mg.movie_id = m.id\n" +
+                    "INNER JOIN genre g ON g.id = mg.genre_id\n" +
+                    "WHERE mg.genre_id = ?";
+
+            films = jdbcTemplate.query(sqlGetQuery, this::mapRowToFilm, genreId);
+            log.info("Из базы данных получен список популярных {} фильмов по жанру ID {}", numberOfFilms, genreId);
+        } else if (year > 0) {
+            String sqlGetQuery = "SELECT m.* FROM movies m\n" +
+                    "WHERE EXTRACT(YEAR FROM m.release_date) = ?";
+
+            films = jdbcTemplate.query(sqlGetQuery, this::mapRowToFilm, year);
+            log.info("Из базы данных получен список популярных {} фильмов по году {}", numberOfFilms, year);
+        } else {
+            films = getAllFilms();
+            log.info("Из базы данных получен список всех {} фильмов", numberOfFilms);
+        }
+
+        return films.stream()
+                .sorted((film1, film2) -> (film1.getUsersLikes().size() - film2.getUsersLikes().size()) * -1)
+                .limit(numberOfFilms)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<FilmGenre> getAllGenres() {
         String sql = "SELECT * FROM genre ORDER BY ID";
         List<FilmGenre> genres = jdbcTemplate.query(sql, this::mapRowToGenre);
