@@ -29,4 +29,6 @@ public interface FilmStorage {
     boolean addUserLikeToFilm(final Integer userId, final Integer filmId);
 
     boolean removeUserLike(final Integer userId, final Integer filmId);
+
+    boolean isFilmExist(Integer filmId);
 }
