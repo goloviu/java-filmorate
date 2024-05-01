@@ -12,10 +12,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Component("userDbStorage")
 @Slf4j
@@ -163,5 +160,26 @@ public class UserDbStorage implements UserStorage {
                 .build();
         addToUserFriendsFromDb(user);
         return user;
+    }
+
+    static Map mapLikesMap(ResultSet rs) throws SQLException {
+        Map<Integer, List<Integer>> mapUserLikes = new HashMap<>();
+        while (rs.next()) {
+            if (mapUserLikes.containsKey(rs.getInt("user_id"))) {
+                List<Integer> films = new ArrayList<>(mapUserLikes.get(rs.getInt("user_id")));
+                films.add(rs.getInt("movie_id"));
+                mapUserLikes.put(rs.getInt("user_id"), films);
+            } else {
+                mapUserLikes.put(rs.getInt("user_id"), List.of(rs.getInt("movie_id")));
+            }
+        }
+        return mapUserLikes;
+    }
+
+    @Override
+    public Map<Integer, List<Integer>> getLikes() {
+        String sql = "SELECT * FROM movie_like ";
+        Map<Integer, List<Integer>> likes = jdbcTemplate.query(sql, UserDbStorage::mapLikesMap);
+        return likes;
     }
 }
