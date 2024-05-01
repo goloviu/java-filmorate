@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
@@ -182,6 +183,13 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void addGenresToDb(final Film film) {
+//        удаление информации о фильме-жанрах перед добавлением новой информации
+        String sqlDeleteMovieGenre = "DELETE FROM movie_genre WHERE movie_id = ?";
+
+        jdbcTemplate.update(sqlDeleteMovieGenre, film.getId());
+        log.info("Фильм по ID: {} и его жанр удалены из базы данных в таблице movie_genre.",
+                film.getId());
+
         String sql = "INSERT INTO movie_genre (movie_id, genre_id) VALUES (?, ?)";
         List<FilmGenre> genres = new ArrayList<>(film.getGenres());
         Integer filmId = film.getId();
@@ -208,5 +216,13 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY g.id";
 
         return new HashSet<>(jdbcTemplate.query(sql, this::mapRowToGenre, filmId));
+    }
+
+    @Override
+    public boolean isFilmExist(Integer filmId) {
+        String sql = "SELECT COUNT(id) FROM movies WHERE id = ?";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, filmId);
+        rs.next();
+        return rs.getInt(1) > 0;
     }
 }
