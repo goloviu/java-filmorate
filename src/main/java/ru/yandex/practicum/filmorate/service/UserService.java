@@ -117,7 +117,7 @@ public class UserService {
             if (!otherUserId.equals(userId)) {
                 List<Integer> otherUserLikes = new ArrayList<>(allLikes.get(otherUserId));
                 otherUserLikes.retainAll(userLikes);
-                if (otherUserLikes.size()>maxCoincidence) {
+                if (otherUserLikes.size() > maxCoincidence) {
                     List<Integer> otherUserCommonLikes = new ArrayList<>(allLikes.get(otherUserId));
                     otherUserCommonLikes.removeAll(userLikes);
                     recommendedIdFilms = new ArrayList<>(otherUserCommonLikes);
