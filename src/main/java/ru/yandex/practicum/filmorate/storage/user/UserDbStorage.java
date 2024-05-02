@@ -4,9 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.PreparedStatement;
@@ -95,6 +98,27 @@ public class UserDbStorage implements UserStorage {
         return rs.getInt(1) > 0;
     }
 
+    @Override
+    public List<Feed> getFeedByUserId(Integer userId) {
+        if (!isUserExist(userId)) {
+            throw new UserNotFoundException("Пользователь не существует по ID: " + userId);
+        }
+        String sqlGetQuery = "SELECT * FROM feed WHERE user_id = ?";
+        List<Feed> userFeed = jdbcTemplate.query(sqlGetQuery, this::mapRowToFeed, userId);
+        log.info("Получен список взаимодействий пользователя.\n {}", userFeed);
+        return userFeed;
+    }
+
+    @Override
+    public boolean saveUserFeed(Integer userId, Integer eventTypeId, Integer operationId, Integer entityId) {
+        String sqlInsertQuery = "INSERT INTO feed(user_id, event_type_id, operation_id, entity_id) VALUES (?, ?, ?, ?);";
+        jdbcTemplate.update(sqlInsertQuery, userId, eventTypeId, operationId, entityId);
+
+        log.info("Фид пользователя ID {} сохранен в базу данных. EventID: {} OperationID: {} EntityID: {}",
+                userId, eventTypeId, operationId, entityId);
+        return true;
+    }
+
     private void addToUserFriendsFromDb(User user) {
         Integer userId = user.getId();
         String sql = "SELECT * FROM friends WHERE user_id = ?";
@@ -163,5 +187,26 @@ public class UserDbStorage implements UserStorage {
                 .build();
         addToUserFriendsFromDb(user);
         return user;
+    }
+
+    private Feed mapRowToFeed(ResultSet rs, int rowNum) throws SQLException {
+        return Feed.builder()
+                .eventId(rs.getInt("id"))
+                .userId(rs.getInt("user_id"))
+                .eventType(getFeedEventTypeFromDbById(rs.getInt("event_type_id")))
+                .operation(getFeedOperationFromDbById(rs.getInt("operation_id")))
+                .entityId(rs.getInt("entity_id"))
+                .timestamp(rs.getTimestamp("creation_date").toInstant().toEpochMilli())
+                .build();
+    }
+
+    private String getFeedEventTypeFromDbById(final Integer eventId) {
+        String sqlGetQuery = "SELECT name FROM event_types WHERE id = ?";
+        return jdbcTemplate.queryForObject(sqlGetQuery, String.class, eventId);
+    }
+
+    private String getFeedOperationFromDbById(final Integer operationId) {
+        String sqlGetQuery = "SELECT name FROM operation WHERE id = ?";
+        return jdbcTemplate.queryForObject(sqlGetQuery, String.class, operationId);
     }
 }

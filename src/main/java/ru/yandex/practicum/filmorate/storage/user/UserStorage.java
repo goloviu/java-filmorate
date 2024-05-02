@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -19,4 +20,9 @@ public interface UserStorage {
     List<User> getAllUsers();
 
     boolean isUserExist(final Integer userId);
+
+    List<Feed> getFeedByUserId(final Integer userId);
+
+    boolean saveUserFeed(final Integer userId, final Integer eventTypeId, final Integer operationId,
+                         final Integer entityId);
 }
