@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.OperationType;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,10 +27,12 @@ class UserDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
     private UserDbStorage userStorage;
+    private UserService userService;
 
     @BeforeEach
     private void newUserStorage() {
         this.userStorage = new UserDbStorage(jdbcTemplate);
+        this.userService = new UserService(userStorage);
     }
 
     private User makeUserWithoutId() {
