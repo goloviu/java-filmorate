@@ -49,6 +49,13 @@ public class ErrorHandler {
         return new ErrorResponse(exception.getMessage());
     }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse reviewNotFoundHandle(ReviewNotFoundException exception) {
+        log.warn("Произошла ошибка во время поиска отзыва в базе данных.", exception);
+        return new ErrorResponse(exception.getMessage());
+    }
+
     @ExceptionHandler({MethodArgumentNotValidException.class, ValidationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse validationHandle(final RuntimeException exception) {
