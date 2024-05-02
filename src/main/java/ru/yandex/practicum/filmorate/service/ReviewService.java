@@ -31,12 +31,12 @@ public class ReviewService {
     }
 
     public Review addReview(Review review) {
-        isValid(review);
+        checkValid(review);
         return reviewDbStorage.add(review);
     }
 
     public Review updateReview(Review review) {
-        isValid(review);
+        checkValid(review);
         return reviewDbStorage.update(review);
     }
 
@@ -70,7 +70,7 @@ public class ReviewService {
         return reviewDbStorage.removeUserDislike(userId, reviewId);
     }
 
-    public void isValid(Review review) {
+    public void checkValid(Review review) {
         if (!userStorage.isUserExist(review.getUserId())) {
             throw new UserNotFoundException("Пользователь не найден: " + review.getUserId());
         }
