@@ -59,7 +59,7 @@ public class ErrorHandler {
     @ExceptionHandler({MethodArgumentNotValidException.class, ValidationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse validationHandle(final RuntimeException exception) {
-        log.warn("Произошла ошибка передачи данных клиента серверу.(Ошибка валидации)", exception);
+        log.warn("Произошла ошибка передачи данных клиента серверу. (Ошибка валидации)", exception);
         return new ErrorResponse(exception.getMessage());
     }
 
