@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -23,10 +25,12 @@ class UserDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
     private UserDbStorage userStorage;
+    private UserService userService;
 
     @BeforeEach
     private void newUserStorage() {
         this.userStorage = new UserDbStorage(jdbcTemplate);
+        this.userService = new UserService(userStorage);
     }
 
     private User makeUserWithoutId() {
@@ -155,5 +159,109 @@ class UserDbStorageTest {
         //expect
         assertThat(isUserExist)
                 .isTrue();
+    }
+
+    @Test
+    void testSaveUserFeed_ShouldReturnEventTypeFriendAndOperationAdd_WhenUserFeedIsNotNullAndSavedInDb() {
+        //given
+        User user = makeUserWithoutId();
+        Integer userId = userStorage.addUser(user).getId();
+        //do
+        userStorage.saveUserFeed(user.getId(), 3, 1, 2);
+        Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
+        //expect
+        assertEquals("FRIEND", feedFromDb.getEventType());
+        assertEquals("ADD", feedFromDb.getOperation());
+    }
+
+    @Test
+    void testSaveUserFeed_ShouldReturnEventTypeFriendAndOperationRemove_WhenUserFeedIsNotNullAndSavedInDb() {
+        //given
+        User user = makeUserWithoutId();
+        Integer userId = userStorage.addUser(user).getId();
+        //do
+        userStorage.saveUserFeed(user.getId(), 3, 2, 2);
+        Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
+        //expect
+        assertEquals("FRIEND", feedFromDb.getEventType());
+        assertEquals("REMOVE", feedFromDb.getOperation());
+    }
+
+    @Test
+    void testSaveUserFeed_ShouldReturnEventTypeReviewAndOperationAdd_WhenUserFeedIsNotNullAndSavedInDb() {
+        //given
+        User user = makeUserWithoutId();
+        Integer userId = userStorage.addUser(user).getId();
+        //do
+        userStorage.saveUserFeed(user.getId(), 2, 1, 2);
+        Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
+        //expect
+        assertEquals("REVIEW", feedFromDb.getEventType());
+        assertEquals("ADD", feedFromDb.getOperation());
+    }
+
+    @Test
+    void testSaveUserFeed_ShouldReturnEventTypeReviewAndOperationRemove_WhenUserFeedIsNotNullAndSavedInDb() {
+        //given
+        User user = makeUserWithoutId();
+        Integer userId = userStorage.addUser(user).getId();
+        //do
+        userStorage.saveUserFeed(user.getId(), 2, 2, 2);
+        Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
+        //expect
+        assertEquals("REVIEW", feedFromDb.getEventType());
+        assertEquals("REMOVE", feedFromDb.getOperation());
+    }
+
+    @Test
+    void testSaveUserFeed_ShouldReturnEventTypeReviewAndOperationUpdate_WhenUserFeedIsNotNullAndSavedInDb() {
+        //given
+        User user = makeUserWithoutId();
+        Integer userId = userStorage.addUser(user).getId();
+        //do
+        userStorage.saveUserFeed(user.getId(), 2, 3, 2);
+        Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
+        //expect
+        assertEquals("REVIEW", feedFromDb.getEventType());
+        assertEquals("UPDATE", feedFromDb.getOperation());
+    }
+
+    @Test
+    void testSaveUserFeed_ShouldReturnEventTypeLikeAndOperationAdd_WhenUserFeedIsNotNullAndSavedInDb() {
+        //given
+        User user = makeUserWithoutId();
+        Integer userId = userStorage.addUser(user).getId();
+        //do
+        userStorage.saveUserFeed(user.getId(), 1, 1, 2);
+        Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
+        //expect
+        assertEquals("LIKE", feedFromDb.getEventType());
+        assertEquals("ADD", feedFromDb.getOperation());
+    }
+
+    @Test
+    void testSaveUserFeed_ShouldReturnEventTypeLikeAndOperationRemove_WhenUserFeedIsNotNullAndSavedInDb() {
+        //given
+        User user = makeUserWithoutId();
+        Integer userId = userStorage.addUser(user).getId();
+        //do
+        userStorage.saveUserFeed(user.getId(), 1, 2, 2);
+        Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
+        //expect
+        assertEquals("LIKE", feedFromDb.getEventType());
+        assertEquals("REMOVE", feedFromDb.getOperation());
+    }
+
+    @Test
+    void testGetFeedByUserId_ShouldReturnEventTypeLikeAndOperationRemove_WhenUserFeedIsNotNull() {
+        //given
+        User user = makeUserWithoutId();
+        Integer userId = userStorage.addUser(user).getId();
+        //do
+        userStorage.saveUserFeed(user.getId(), 1, 2, 2);
+        Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
+        //expect
+        assertEquals("LIKE", feedFromDb.getEventType());
+        assertEquals("REMOVE", feedFromDb.getOperation());
     }
 }

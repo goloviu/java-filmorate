@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -56,6 +57,7 @@ public class UserService {
         user.getFriends().add(friendId);
         userStorage.updateUser(user);
         userStorage.updateUser(friend);
+        userStorage.saveUserFeed(userId, 3, 1, friendId);
         return friend;
     }
 
@@ -69,6 +71,7 @@ public class UserService {
         friend.getFriendsRequests().remove(userId);
 
         userStorage.removeFriendById(userId, otherUserId);
+        userStorage.saveUserFeed(userId, 3, 2, otherUserId);
         return friend;
     }
 
@@ -95,6 +98,10 @@ public class UserService {
         return userStorage.getUserById(userId).getFriends().stream()
                 .map(userStorage::getUserById)
                 .collect(Collectors.toList());
+    }
+
+    public List<Feed> getFeedByUserId(final Integer userId) {
+        return userStorage.getFeedByUserId(userId);
     }
 
     public void isValidUser(User user) {
