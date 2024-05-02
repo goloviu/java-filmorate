@@ -95,6 +95,17 @@ public class UserDbStorage implements UserStorage {
         return rs.getInt(1) > 0;
     }
 
+    @Override
+    public Set<Integer> getUserLikes(Integer userId) {
+        String sql = "SELECT movie_id FROM movie_like WHERE user_id = ?";
+        SqlRowSet srs = jdbcTemplate.queryForRowSet(sql, userId);
+        Set<Integer> userLikes = new HashSet<>();
+        while (srs.next()) {
+            userLikes.add(srs.getInt("movie_id"));
+        }
+        return userLikes;
+    }
+
     private void addToUserFriendsFromDb(User user) {
         Integer userId = user.getId();
         String sql = "SELECT * FROM friends WHERE user_id = ?";

@@ -5,6 +5,7 @@ import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
 
 import java.util.List;
+import java.util.Set;
 
 public interface FilmStorage {
 
@@ -15,6 +16,8 @@ public interface FilmStorage {
     Film update(final Film film);
 
     Film getFilmById(final Integer filmId);
+
+    List<Film> getFilmsById(Set<Integer> filmIds);
 
     List<Film> getAllFilms();
 

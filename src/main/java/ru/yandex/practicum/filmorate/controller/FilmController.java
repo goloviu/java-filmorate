@@ -2,7 +2,15 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -64,4 +72,12 @@ public class FilmController {
                 count);
         return filmService.getPopularFilmsByLikes(count);
     }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFriendsFilms(@RequestParam Integer userId, @RequestParam Integer friendId) {
+        log.info("Получен GET запрос на вывод общих с другом фильмов с сортировкой по их популярности (Пользователь ID: {}, друг ID: {})",
+                userId, friendId);
+        return filmService.getCommonFriendsFilms(userId, friendId);
+    }
+
 }

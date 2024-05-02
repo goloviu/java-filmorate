@@ -11,12 +11,15 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
+import ru.yandex.practicum.filmorate.model.comparator.FilmLikesComparator;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,7 +86,7 @@ public class FilmService {
         }
 
         return filmStorage.getAllFilms().stream()
-                .sorted((film1, film2) -> (film1.getUsersLikes().size() - film2.getUsersLikes().size()) * -1)
+                .sorted(new FilmLikesComparator())
                 .limit(numberOfFilms)
                 .collect(Collectors.toList());
     }
@@ -113,5 +116,20 @@ public class FilmService {
             log.debug("Дата релиза фильма указана раньше 28 Декабря 1895 года: {}", film);
             throw new ValidationException("Дата релиза фильма не может быть до 28 Декабря 1895 года");
         }
+    }
+
+    public List<Film> getCommonFriendsFilms(final Integer userId, final Integer friendId) {
+        if (!userStorage.isUserExist(userId)) {
+            throw new UserNotFoundException("Пользователь не найден: " + userId);
+        }
+        Set<Integer> userLikes = userStorage.getUserLikes(userId);
+        Set<Integer> friendLikes = userStorage.getUserLikes(friendId);
+        HashSet<Integer> likesIntersection = new HashSet<>(userLikes);
+        likesIntersection.retainAll(friendLikes);
+        if (likesIntersection.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Film> commonFilms = filmStorage.getFilmsById(likesIntersection);
+        return commonFilms.stream().sorted(new FilmLikesComparator()).collect(Collectors.toList());
     }
 }
