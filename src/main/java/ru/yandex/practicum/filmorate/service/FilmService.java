@@ -58,6 +58,7 @@ public class FilmService {
 
         film.getUsersLikes().add(userId);
         filmStorage.addUserLikeToFilm(userId, filmId);
+        userStorage.saveUserFeed(userId, 1, 1, filmId);
         return new ArrayList<>(film.getUsersLikes());
     }
 
@@ -70,6 +71,7 @@ public class FilmService {
 
         film.getUsersLikes().remove(userId);
         filmStorage.removeUserLike(userId, filmId);
+        userStorage.saveUserFeed(userId, 1, 2, filmId);
         return new ArrayList<>(film.getUsersLikes());
     }
 

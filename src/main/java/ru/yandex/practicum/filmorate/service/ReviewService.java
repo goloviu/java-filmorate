@@ -32,16 +32,22 @@ public class ReviewService {
 
     public Review addReview(Review review) {
         checkValid(review);
-        return reviewDbStorage.add(review);
+        Review savedToDbReview = reviewDbStorage.add(review);
+        userStorage.saveUserFeed(review.getUserId(), 2, 1, savedToDbReview.getReviewId());
+        return savedToDbReview;
     }
 
     public Review updateReview(Review review) {
         checkValid(review);
-        return reviewDbStorage.update(review);
+        Review updatedReview = reviewDbStorage.update(review);
+        userStorage.saveUserFeed(updatedReview.getUserId(), 2, 3, updatedReview.getReviewId());
+        return updatedReview;
     }
 
     public Review deleteReviewById(Integer reviewId) {
-        return reviewDbStorage.remove(reviewId);
+        Review removedReview = reviewDbStorage.remove(reviewId);
+        userStorage.saveUserFeed(removedReview.getUserId(), 2, 2, removedReview.getReviewId());
+        return removedReview;
     }
 
     public Review getReviewById(Integer reviewId) {
