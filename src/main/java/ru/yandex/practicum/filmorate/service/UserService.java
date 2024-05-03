@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -108,6 +109,9 @@ public class UserService {
     }
 
     public List<Film> getRecommendedFilms(Integer userId) {
+        if (!userStorage.isUserExist(userId)) {
+            throw new UserNotFoundException("Пользователь не найден: " + userId);
+        }
         Map<Integer, List<Integer>> allLikes = userStorage.getLikes();
         List<Integer> filmsUserLiked = allLikes.get(userId);
         Integer maxCoincidence = 0; // подсчет максимального количества совпадающих лайков на фильмах
