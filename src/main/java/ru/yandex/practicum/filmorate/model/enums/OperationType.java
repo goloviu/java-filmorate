@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.model.enums;
 
 public enum OperationType {
-    ADD (1),
-    REMOVE (2),
-    UPDATE (3);
+    ADD ( 1 ),
+    REMOVE ( 2 ),
+    UPDATE ( 3 );
 
     Integer id;
 
