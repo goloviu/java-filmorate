@@ -109,17 +109,17 @@ public class UserService {
 
     public List<Film> getRecommendedFilms(Integer userId) {
         Map<Integer, List<Integer>> allLikes = userStorage.getLikes();
-        List<Integer> userLikes = allLikes.get(userId);
+        List<Integer> filmsUserLiked = allLikes.get(userId);
         Integer maxCoincidence = 0; // подсчет максимального количества совпадающих лайков на фильмах
         List<Integer> recommendedIdFilms = new ArrayList<>();
 
-        for (Integer otherUserId: allLikes.keySet()) { // для каждого пользователя подсчет совпадающих лайков на фильмах и сохранение максимального
+        for (Integer otherUserId : allLikes.keySet()) { // для каждого пользователя подсчет совпадающих лайков на фильмах и сохранение максимального
             if (!otherUserId.equals(userId)) {
-                List<Integer> otherUserLikes = new ArrayList<>(allLikes.get(otherUserId));
-                otherUserLikes.retainAll(userLikes);
-                if (otherUserLikes.size() > maxCoincidence) {
+                List<Integer> filmsOtherUserLiked = new ArrayList<>(allLikes.get(otherUserId));
+                filmsOtherUserLiked.retainAll(filmsUserLiked);
+                if (filmsOtherUserLiked.size() > maxCoincidence) {
                     List<Integer> otherUserCommonLikes = new ArrayList<>(allLikes.get(otherUserId));
-                    otherUserCommonLikes.removeAll(userLikes);
+                    otherUserCommonLikes.removeAll(filmsUserLiked);
                     recommendedIdFilms = new ArrayList<>(otherUserCommonLikes);
                 }
             }
