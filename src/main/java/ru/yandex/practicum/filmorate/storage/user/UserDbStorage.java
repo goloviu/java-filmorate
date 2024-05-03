@@ -103,7 +103,7 @@ public class UserDbStorage implements UserStorage {
         }
         String sqlGetQuery = "SELECT * FROM feed WHERE user_id = ?";
         List<Feed> userFeed = jdbcTemplate.query(sqlGetQuery, this::mapRowToFeed, userId);
-        log.info("Получен список взаимодействий пользователя.\n {}", userFeed);
+        log.info("Получен список взаимодействий пользователя. \n {}", userFeed);
         return userFeed;
     }
 
