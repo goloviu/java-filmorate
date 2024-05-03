@@ -109,6 +109,9 @@ public class UserService {
     }
 
     public List<Film> getRecommendedFilms(Integer userId) {
+        if (!userStorage.isUserExist(userId)) {
+            throw new UserNotFoundException("Пользователь не найден: " + userId);
+        }
         Map<Integer, List<Integer>> allLikes = userStorage.getLikes();
         List<Integer> filmsUserLiked = allLikes.get(userId);
         Integer maxCoincidence = 0; // подсчет максимального количества совпадающих лайков на фильмах
