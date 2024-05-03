@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -98,5 +99,12 @@ public class UserService {
             log.debug("Дата рождения не может быть в будущем: {}", user);
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
+    }
+
+    public void deleteUserById(Integer userId) {
+        if (!userStorage.isUserExist(userId)) {
+            throw new UserNotFoundException("Пользователь не найден: " + userId);
+        }
+        userStorage.removeUser(userId);
     }
 }

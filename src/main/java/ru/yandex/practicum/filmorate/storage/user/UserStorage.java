@@ -19,4 +19,6 @@ public interface UserStorage {
     List<User> getAllUsers();
 
     boolean isUserExist(final Integer userId);
+
+    void removeUser(Integer userId);
 }

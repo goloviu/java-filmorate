@@ -4,10 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.exceptions.LikeException;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
@@ -113,5 +110,12 @@ public class FilmService {
             log.debug("Дата релиза фильма указана раньше 28 Декабря 1895 года: {}", film);
             throw new ValidationException("Дата релиза фильма не может быть до 28 Декабря 1895 года");
         }
+    }
+
+    public void deleteFilmById(Integer filmId) {
+        if (!filmStorage.isFilmExist(filmId)) {
+            throw new FilmNotFoundException("Фильм не найден ID: " + filmId);
+        }
+        filmStorage.remove(filmId);
     }
 }
