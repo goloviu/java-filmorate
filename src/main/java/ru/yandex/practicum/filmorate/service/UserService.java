@@ -10,6 +10,8 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.OperationType;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -24,8 +26,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserService {
 
-    private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
     @Autowired
     public UserService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
@@ -57,7 +59,7 @@ public class UserService {
         user.getFriends().add(friendId);
         userStorage.updateUser(user);
         userStorage.updateUser(friend);
-        userStorage.saveUserFeed(userId, 3, 1, friendId);
+        userStorage.saveUserFeed(userId, EventType.FRIEND, OperationType.ADD, friendId);
         return friend;
     }
 
@@ -71,7 +73,7 @@ public class UserService {
         friend.getFriendsRequests().remove(userId);
 
         userStorage.removeFriendById(userId, otherUserId);
-        userStorage.saveUserFeed(userId, 3, 2, otherUserId);
+        userStorage.saveUserFeed(userId, EventType.FRIEND, OperationType.REMOVE, otherUserId);
         return friend;
     }
 

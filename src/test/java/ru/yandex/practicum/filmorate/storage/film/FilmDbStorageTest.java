@@ -82,14 +82,14 @@ class FilmDbStorageTest {
         filmDbStorage.add(film2);
         filmDbStorage.add(film3);
         //do
-        filmDbStorage.remove(film3);
+        Integer deletedFilmId = filmDbStorage.remove(film3).getId();
         //expect
         String sql = "SELECT COUNT(id) FROM movies";
-        Integer columnNum =  jdbcTemplate.queryForObject(sql, (rs, rowNum) -> (rs.getInt(1)));
+        Integer columnNum =  jdbcTemplate.queryForObject(sql, Integer.class);
         assertEquals(2, columnNum, "Количество записей больше 2х");
 
         EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class,
-                () -> filmDbStorage.getFilmById(3), "Исключение не выброшено");
+                () -> filmDbStorage.getFilmById(deletedFilmId), "Исключение не выброшено");
         assertEquals("Incorrect result size: expected 1, actual 0", exception.getMessage());
     }
 
