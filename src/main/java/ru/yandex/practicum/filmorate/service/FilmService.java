@@ -12,8 +12,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +32,7 @@ public class FilmService {
 
     public Film add(final Film film) {
         isValidFilm(film);
+        film.setGenres(film.getGenres().stream().sorted(Comparator.comparingInt(FilmGenre::getId)).collect(Collectors.toCollection(LinkedHashSet::new)));
         return filmStorage.add(film);
     }
 
