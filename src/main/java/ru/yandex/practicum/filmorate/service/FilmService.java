@@ -11,12 +11,12 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
-import ru.yandex.practicum.filmorate.model.comparator.FilmLikesComparator;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +29,8 @@ public class FilmService {
     private static final LocalDate FIRST_FILM_DATE = LocalDate.parse("1895-12-28");
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+
+    private final Comparator<Film> filmLikesComparator = Comparator.comparing(film -> film.getUsersLikes().size());
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
@@ -86,7 +88,7 @@ public class FilmService {
         }
 
         return filmStorage.getAllFilms().stream()
-                .sorted(new FilmLikesComparator())
+                .sorted(filmLikesComparator.reversed())
                 .limit(numberOfFilms)
                 .collect(Collectors.toList());
     }
@@ -122,6 +124,9 @@ public class FilmService {
         if (!userStorage.isUserExist(userId)) {
             throw new UserNotFoundException("Пользователь не найден: " + userId);
         }
+        if (!userStorage.isUserExist(friendId)) {
+            throw new UserNotFoundException("Друг не найден: " + friendId);
+        }
         Set<Integer> userLikes = userStorage.getUserLikes(userId);
         Set<Integer> friendLikes = userStorage.getUserLikes(friendId);
         HashSet<Integer> likesIntersection = new HashSet<>(userLikes);
@@ -130,6 +135,6 @@ public class FilmService {
             return new ArrayList<>();
         }
         List<Film> commonFilms = filmStorage.getFilmsById(likesIntersection);
-        return commonFilms.stream().sorted(new FilmLikesComparator()).collect(Collectors.toList());
+        return commonFilms.stream().sorted(filmLikesComparator.reversed()).collect(Collectors.toList());
     }
 }
