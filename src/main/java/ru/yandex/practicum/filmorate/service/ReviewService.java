@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.OperationType;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -33,20 +35,20 @@ public class ReviewService {
     public Review addReview(Review review) {
         checkValid(review);
         Review savedToDbReview = reviewDbStorage.add(review);
-        userStorage.saveUserFeed(review.getUserId(), 2, 1, savedToDbReview.getReviewId());
+        userStorage.saveUserFeed(review.getUserId(), EventType.REVIEW, OperationType.ADD, savedToDbReview.getReviewId());
         return savedToDbReview;
     }
 
     public Review updateReview(Review review) {
         checkValid(review);
         Review updatedReview = reviewDbStorage.update(review);
-        userStorage.saveUserFeed(updatedReview.getUserId(), 2, 3, updatedReview.getReviewId());
+        userStorage.saveUserFeed(updatedReview.getUserId(), EventType.REVIEW, OperationType.UPDATE, updatedReview.getReviewId());
         return updatedReview;
     }
 
     public Review deleteReviewById(Integer reviewId) {
         Review removedReview = reviewDbStorage.remove(reviewId);
-        userStorage.saveUserFeed(removedReview.getUserId(), 2, 2, removedReview.getReviewId());
+        userStorage.saveUserFeed(removedReview.getUserId(), EventType.REVIEW, OperationType.REMOVE, removedReview.getReviewId());
         return removedReview;
     }
 

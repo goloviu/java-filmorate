@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.OperationType;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -106,12 +108,12 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public boolean saveUserFeed(Integer userId, Integer eventTypeId, Integer operationId, Integer entityId) {
+    public boolean saveUserFeed(Integer userId, EventType eventType, OperationType operationType, Integer entityId) {
         String sqlInsertQuery = "INSERT INTO feed(user_id, event_type_id, operation_id, entity_id) VALUES (?, ?, ?, ?);";
-        jdbcTemplate.update(sqlInsertQuery, userId, eventTypeId, operationId, entityId);
+        jdbcTemplate.update(sqlInsertQuery, userId, eventType.getId(), operationType.getId(), entityId);
 
         log.info("Фид пользователя ID {} сохранен в базу данных. EventID: {} OperationID: {} EntityID: {}",
-                userId, eventTypeId, operationId, entityId);
+                userId, eventType.getId(), operationType.getId(), entityId);
         return true;
     }
 
@@ -196,14 +198,14 @@ public class UserDbStorage implements UserStorage {
                 .build();
     }
 
-    private String getFeedEventTypeFromDbById(final Integer eventId) {
+    private EventType getFeedEventTypeFromDbById(final Integer eventId) {
         String sqlGetQuery = "SELECT name FROM event_types WHERE id = ?";
-        return jdbcTemplate.queryForObject(sqlGetQuery, String.class, eventId);
+        return EventType.valueOf(jdbcTemplate.queryForObject(sqlGetQuery, String.class, eventId));
     }
 
-    private String getFeedOperationFromDbById(final Integer operationId) {
+    private OperationType getFeedOperationFromDbById(final Integer operationId) {
         String sqlGetQuery = "SELECT name FROM operation WHERE id = ?";
-        return jdbcTemplate.queryForObject(sqlGetQuery, String.class, operationId);
+        return OperationType.valueOf(jdbcTemplate.queryForObject(sqlGetQuery, String.class, operationId));
     }
 
     static Map mapLikesMap(ResultSet rs) throws SQLException {

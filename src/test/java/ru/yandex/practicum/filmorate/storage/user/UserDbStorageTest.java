@@ -9,7 +9,8 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.OperationType;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -25,12 +26,10 @@ class UserDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
     private UserDbStorage userStorage;
-    private UserService userService;
 
     @BeforeEach
     private void newUserStorage() {
         this.userStorage = new UserDbStorage(jdbcTemplate);
-        this.userService = new UserService(userStorage);
     }
 
     private User makeUserWithoutId() {
@@ -167,11 +166,11 @@ class UserDbStorageTest {
         User user = makeUserWithoutId();
         Integer userId = userStorage.addUser(user).getId();
         //do
-        userStorage.saveUserFeed(user.getId(), 3, 1, 2);
+        userStorage.saveUserFeed(user.getId(), EventType.FRIEND, OperationType.ADD, 2);
         Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
         //expect
-        assertEquals("FRIEND", feedFromDb.getEventType());
-        assertEquals("ADD", feedFromDb.getOperation());
+        assertEquals(EventType.FRIEND, feedFromDb.getEventType());
+        assertEquals(OperationType.ADD, feedFromDb.getOperation());
     }
 
     @Test
@@ -180,11 +179,11 @@ class UserDbStorageTest {
         User user = makeUserWithoutId();
         Integer userId = userStorage.addUser(user).getId();
         //do
-        userStorage.saveUserFeed(user.getId(), 3, 2, 2);
+        userStorage.saveUserFeed(user.getId(), EventType.FRIEND, OperationType.REMOVE, 2);
         Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
         //expect
-        assertEquals("FRIEND", feedFromDb.getEventType());
-        assertEquals("REMOVE", feedFromDb.getOperation());
+        assertEquals(EventType.FRIEND, feedFromDb.getEventType());
+        assertEquals(OperationType.REMOVE, feedFromDb.getOperation());
     }
 
     @Test
@@ -193,11 +192,11 @@ class UserDbStorageTest {
         User user = makeUserWithoutId();
         Integer userId = userStorage.addUser(user).getId();
         //do
-        userStorage.saveUserFeed(user.getId(), 2, 1, 2);
+        userStorage.saveUserFeed(user.getId(), EventType.REVIEW, OperationType.ADD, 2);
         Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
         //expect
-        assertEquals("REVIEW", feedFromDb.getEventType());
-        assertEquals("ADD", feedFromDb.getOperation());
+        assertEquals(EventType.REVIEW, feedFromDb.getEventType());
+        assertEquals(OperationType.ADD, feedFromDb.getOperation());
     }
 
     @Test
@@ -206,11 +205,11 @@ class UserDbStorageTest {
         User user = makeUserWithoutId();
         Integer userId = userStorage.addUser(user).getId();
         //do
-        userStorage.saveUserFeed(user.getId(), 2, 2, 2);
+        userStorage.saveUserFeed(user.getId(), EventType.REVIEW, OperationType.REMOVE, 2);
         Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
         //expect
-        assertEquals("REVIEW", feedFromDb.getEventType());
-        assertEquals("REMOVE", feedFromDb.getOperation());
+        assertEquals(EventType.REVIEW, feedFromDb.getEventType());
+        assertEquals(OperationType.REMOVE, feedFromDb.getOperation());
     }
 
     @Test
@@ -219,11 +218,11 @@ class UserDbStorageTest {
         User user = makeUserWithoutId();
         Integer userId = userStorage.addUser(user).getId();
         //do
-        userStorage.saveUserFeed(user.getId(), 2, 3, 2);
+        userStorage.saveUserFeed(user.getId(), EventType.REVIEW, OperationType.UPDATE, 2);
         Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
         //expect
-        assertEquals("REVIEW", feedFromDb.getEventType());
-        assertEquals("UPDATE", feedFromDb.getOperation());
+        assertEquals(EventType.REVIEW, feedFromDb.getEventType());
+        assertEquals(OperationType.UPDATE, feedFromDb.getOperation());
     }
 
     @Test
@@ -232,11 +231,11 @@ class UserDbStorageTest {
         User user = makeUserWithoutId();
         Integer userId = userStorage.addUser(user).getId();
         //do
-        userStorage.saveUserFeed(user.getId(), 1, 1, 2);
+        userStorage.saveUserFeed(user.getId(), EventType.LIKE, OperationType.ADD, 2);
         Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
         //expect
-        assertEquals("LIKE", feedFromDb.getEventType());
-        assertEquals("ADD", feedFromDb.getOperation());
+        assertEquals(EventType.LIKE, feedFromDb.getEventType());
+        assertEquals(OperationType.ADD, feedFromDb.getOperation());
     }
 
     @Test
@@ -245,11 +244,11 @@ class UserDbStorageTest {
         User user = makeUserWithoutId();
         Integer userId = userStorage.addUser(user).getId();
         //do
-        userStorage.saveUserFeed(user.getId(), 1, 2, 2);
+        userStorage.saveUserFeed(user.getId(), EventType.LIKE, OperationType.REMOVE, 2);
         Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
         //expect
-        assertEquals("LIKE", feedFromDb.getEventType());
-        assertEquals("REMOVE", feedFromDb.getOperation());
+        assertEquals(EventType.LIKE, feedFromDb.getEventType());
+        assertEquals(OperationType.REMOVE, feedFromDb.getOperation());
     }
 
     @Test
@@ -258,10 +257,12 @@ class UserDbStorageTest {
         User user = makeUserWithoutId();
         Integer userId = userStorage.addUser(user).getId();
         //do
-        userStorage.saveUserFeed(user.getId(), 1, 2, 2);
+        userStorage.saveUserFeed(user.getId(), EventType.LIKE, OperationType.REMOVE, 2);
         Feed feedFromDb = userStorage.getFeedByUserId(userId).get(0);
         //expect
-        assertEquals("LIKE", feedFromDb.getEventType());
-        assertEquals("REMOVE", feedFromDb.getOperation());
+        assertEquals(EventType.LIKE, feedFromDb.getEventType());
+        assertEquals(OperationType.REMOVE, feedFromDb.getOperation());
+        assertEquals(userId, feedFromDb.getUserId());
+        assertEquals(2, feedFromDb.getEntityId());
     }
 }
