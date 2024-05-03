@@ -5,23 +5,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class UserService {
 
+    private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage) {
+        this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
 
@@ -98,5 +106,37 @@ public class UserService {
             log.debug("Дата рождения не может быть в будущем: {}", user);
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
+    }
+
+    public List<Film> getRecommendedFilms(Integer userId) {
+        if (!userStorage.isUserExist(userId)) {
+            throw new UserNotFoundException("Пользователь не найден: " + userId);
+        }
+        Map<Integer, List<Integer>> allLikes = userStorage.getLikes();
+        List<Integer> filmsUserLiked = allLikes.get(userId);
+        Integer maxCoincidence = 0; // подсчет максимального количества совпадающих лайков на фильмах
+        List<Integer> recommendedIdFilms = new ArrayList<>();
+
+        for (Integer otherUserId : allLikes.keySet()) { // для каждого пользователя подсчет совпадающих лайков на фильмах и сохранение максимального
+            if (!otherUserId.equals(userId)) {
+                List<Integer> filmsOtherUserLiked = new ArrayList<>(allLikes.get(otherUserId));
+                filmsOtherUserLiked.retainAll(filmsUserLiked);
+                if (filmsOtherUserLiked.size() > maxCoincidence) {
+                    List<Integer> otherUserCommonLikes = new ArrayList<>(allLikes.get(otherUserId));
+                    otherUserCommonLikes.removeAll(filmsUserLiked);
+                    recommendedIdFilms = new ArrayList<>(otherUserCommonLikes);
+                }
+            }
+        }
+        List<Film> recommendedFilms = new ArrayList<>();
+        if (!recommendedIdFilms.isEmpty()) {
+            List<Film> films = filmStorage.getAllFilms();
+            for (Film film : films) {
+                if (recommendedIdFilms.contains(film.getId())) {
+                    recommendedFilms.add(film);
+                }
+            }
+        }
+        return recommendedFilms;
     }
 }
