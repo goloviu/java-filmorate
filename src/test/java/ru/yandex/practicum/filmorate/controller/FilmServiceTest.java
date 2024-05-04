@@ -36,7 +36,8 @@ class FilmServiceTest {
     public void tesIsValidFilmShouldThrowValidationExceptionWhenFilmReleaseDateIs1895_12_27() {
         // given
         Film film = new Film(0, "Java Developer", "About strong Java developer",
-                LocalDate.parse("1895-12-27"), 60, new FilmRating(1), Collections.emptySet(), Collections.emptySet());
+                LocalDate.parse("1895-12-27"), 60, new FilmRating(1), Collections.emptySet(),
+                Collections.emptySet(), Collections.emptyList());
         // expect
         ValidationException exception = assertThrows(ValidationException.class, () -> filmService.isValidFilm(film),
                 "ValidationException не выбросилось, когда указана дата релиза фильма до 28.12.1895");
@@ -50,7 +51,8 @@ class FilmServiceTest {
         HashSet<FilmGenre> testGenres = new HashSet<>();
         testGenres.add(new FilmGenre(1));
         Film film = new Film(0, "Java Developer", "About strong Java developer",
-                LocalDate.parse("1895-12-28"), 60,new FilmRating(1), testGenres, Collections.emptySet());
+                LocalDate.parse("1895-12-28"), 60,new FilmRating(1), testGenres,
+                Collections.emptySet(), Collections.emptyList());
         // expect
         assertDoesNotThrow(() -> filmService.isValidFilm(film), "Валидация не должна выбрасывать исключение");
     }

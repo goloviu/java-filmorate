@@ -47,16 +47,16 @@ public class DirectorServiceTest {
                 .name("new director")
                 .build();
 
-        filmService.addDirector(director);
+        Director savedDirector = filmService.addDirector(director);
 
-        Director updatedDirector = Director.builder()
-                .id(1)
+        Director currentDirector = Director.builder()
+                .id(savedDirector.getId())
                 .name("new name director")
                 .build();
 
-        Director savedDirector = filmService.updateDirector(updatedDirector);
+        Director updatedDirector = filmService.updateDirector(currentDirector);
 
-        assertEquals(updatedDirector, savedDirector, "Разные режисеры!");
+        assertEquals(updatedDirector, currentDirector, "Разные режисеры!");
     }
 
     @Test
