@@ -214,7 +214,7 @@ public class FilmDbStorage implements FilmStorage {
         if (currentDirector == null) {
             throw new DirectorNotFoundException("Режисер с id " + directorId + " не существует!");
         }
-        String sqlDeleteDirector= "DELETE FROM directors WHERE id = ?";
+        String sqlDeleteDirector = "DELETE FROM directors WHERE id = ?";
 
         jdbcTemplate.update(sqlDeleteDirector, directorId);
         log.info("Режисер с ID: {} удален из базы данных в таблице directors",
