@@ -5,10 +5,7 @@ import lombok.*;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @NoArgsConstructor // для сериализации Json в объект
@@ -35,6 +32,8 @@ public class Film {
     @Valid
     private Set<FilmGenre> genres = new HashSet<>();
     private Set<Integer> usersLikes = new HashSet<>();
+    @NonNull
+    private List<Director> directors = new ArrayList<>();
 
     public Map<String, Object> toMap() {
         Map<String, Object> dbMapping = new HashMap<>();

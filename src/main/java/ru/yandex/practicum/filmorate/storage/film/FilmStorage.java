@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
@@ -34,6 +35,18 @@ public interface FilmStorage {
     boolean removeUserLike(final Integer userId, final Integer filmId);
 
     boolean isFilmExist(Integer filmId);
+
+    List<Film> getDirectorFilms(Integer directorId, String sortBy);
+
+    Director addDirector(Director director);
+
+    Director updateDirector(Director director);
+
+    Director deleteDirectorById(Integer directorId);
+
+    List<Director> getAllDirectors();
+
+    Director getDirectorById(Integer directorId);
 
     void remove(Integer filmId);
 }

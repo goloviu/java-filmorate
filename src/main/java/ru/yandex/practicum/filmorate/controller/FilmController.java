@@ -73,6 +73,13 @@ public class FilmController {
         return filmService.getPopularFilmsByLikes(count);
     }
 
+    @GetMapping("/director/{directorId}")
+    public List<Film> getDirectorFilms(@PathVariable Integer directorId,
+                                       @RequestParam(defaultValue = "year") String sortBy) {
+        log.info("Получен GET запрос на нахождения фильмов по ID режиссера: {}", directorId);
+        return filmService.getDirectorFilms(directorId, sortBy);
+    }
+
     @GetMapping("/common")
     public List<Film> getCommonFriendsFilms(@RequestParam Integer userId, @RequestParam Integer friendId) {
         log.info("Получен GET запрос на вывод общих с другом фильмов с сортировкой по их популярности (Пользователь ID: {}, друг ID: {})",

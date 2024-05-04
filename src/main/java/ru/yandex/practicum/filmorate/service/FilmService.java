@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.*;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
@@ -116,6 +117,31 @@ public class FilmService {
             log.debug("Дата релиза фильма указана раньше 28 Декабря 1895 года: {}", film);
             throw new ValidationException("Дата релиза фильма не может быть до 28 Декабря 1895 года");
         }
+    }
+
+    public List<Film> getDirectorFilms(Integer directorId, String sortBy) {
+        log.info("Найденный режисер: {}", filmStorage.getDirectorById(directorId));
+        return filmStorage.getDirectorFilms(directorId, sortBy);
+    }
+
+    public Director addDirector(Director director) {
+        return filmStorage.addDirector(director);
+    }
+
+    public Director updateDirector(Director director) {
+        return filmStorage.updateDirector(director);
+    }
+
+    public Director deleteDirectorById(Integer directorId) {
+        return filmStorage.deleteDirectorById(directorId);
+    }
+
+    public List<Director> getAllDirectors() {
+        return filmStorage.getAllDirectors();
+    }
+
+    public Director getDirectorById(Integer directorId) {
+        return filmStorage.getDirectorById(directorId);
     }
 
     public List<Film> getCommonFriendsFilms(final Integer userId, final Integer friendId) {
