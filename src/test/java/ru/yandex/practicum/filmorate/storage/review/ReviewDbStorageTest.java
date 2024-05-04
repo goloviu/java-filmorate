@@ -39,7 +39,8 @@ public class ReviewDbStorageTest {
         User user = new User(0, "user" + userNum + "@mail.ru", "user" + userNum, "userName" + userNum,
                 LocalDate.parse("2000-12-27"), new HashSet<>(), new HashSet<>());
         Film film = new Film(0, "Java Developer", "About strong Java developer",
-                LocalDate.parse("1895-12-28"), 60, new FilmRating(1), Collections.emptySet(), Collections.emptySet());
+                LocalDate.parse("1895-12-28"), 60, new FilmRating(1), Collections.emptySet(),
+                Collections.emptySet(), Collections.emptyList());
 
         return Review.builder()
                 .content("Content")
