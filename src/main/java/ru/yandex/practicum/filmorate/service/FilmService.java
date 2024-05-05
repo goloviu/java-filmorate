@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exceptions.LikeException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
@@ -17,9 +16,14 @@ import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.OperationType;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,7 +45,6 @@ public class FilmService {
 
     public Film add(final Film film) {
         isValidFilm(film);
-        film.setGenres(film.getGenres().stream().sorted(Comparator.comparing(FilmGenre::getId)).collect(Collectors.toCollection(LinkedHashSet::new)));
         return filmStorage.add(film);
     }
 
@@ -173,3 +176,7 @@ public class FilmService {
         filmStorage.remove(filmId);
     }
 }
+
+
+
+
