@@ -27,12 +27,10 @@ class UserDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
     private UserDbStorage userStorage;
-    private UserService userService;
 
     @BeforeEach
     private void newUserStorage() {
         this.userStorage = new UserDbStorage(jdbcTemplate);
-        this.userService = new UserService(userStorage);
     }
 
     private User makeUserWithoutId() {
