@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.DirectorNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
@@ -14,11 +16,8 @@ import ru.yandex.practicum.filmorate.model.FilmRating;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component("filmDbStorage")
 @Slf4j
@@ -26,6 +25,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
+    private final Comparator<Film> filmLikesComparator = Comparator.comparing(film -> film.getUsersLikes().size());
 
     @Autowired
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
@@ -42,6 +42,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setId(filmIdFromDbAfterInsert);
 
         addGenresToDb(film);
+        addDirectorsToDb(film);
 
         log.info("Фильм добавлен в базу данных в таблицу movies по ID: {} \n {}", filmIdFromDbAfterInsert, film);
         return film;
@@ -69,6 +70,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getMpa().getId(), film.getId());
 
         addGenresToDb(film);
+        addDirectorsToDb(film);
 
         String sqlReadQuery = "SELECT * FROM movies WHERE id = ?";
         Film updatedFilm = jdbcTemplate.queryForObject(sqlReadQuery, this::mapRowToFilm, film.getId());
@@ -157,6 +159,98 @@ public class FilmDbStorage implements FilmStorage {
         return isLikeRemoved;
     }
 
+    @Override
+    public List<Film> getDirectorFilms(Integer directorId, String sortBy) {
+        String sqlReadQuery = "SELECT m.id, m.title, m.description, m.duration, m.release_date, m.rating_id " +
+                "FROM movies AS m " +
+                "JOIN director_movies AS dm " +
+                "  ON m.id = dm.movie_id " +
+                "WHERE dm.director_id = ?;";
+        List<Film> films = jdbcTemplate.query(sqlReadQuery, this::mapRowToFilm, directorId);
+
+        if (sortBy.equals("year")) {
+            films = films.stream()
+                    .sorted(Comparator.comparing(Film::getReleaseDate))
+                    .collect(Collectors.toList());
+        } else if (sortBy.equals("likes")) {
+            films = films.stream()
+                    .sorted(filmLikesComparator.reversed())
+                    .collect(Collectors.toList());
+        }
+
+        log.info("Получены фильмы из базы данных из таблицы movies для режисера с id {}. Отсортированы по {} \n {}",
+                directorId, sortBy, films);
+        return films;
+    }
+
+    @Override
+    public Director addDirector(Director director) {
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("directors")
+                .usingGeneratedKeyColumns("id");
+
+        Integer directorIdFromDbAfterInsert = simpleJdbcInsert.executeAndReturnKey(director.toMap()).intValue();
+        director.setId(directorIdFromDbAfterInsert);
+
+        log.info("Режисер добавлен в базу данных в таблицу directors по ID: {} \n {}",
+                directorIdFromDbAfterInsert, director);
+        return director;
+    }
+
+    @Override
+    public Director updateDirector(Director director) {
+        int directorId = director.getId();
+        String sql = "UPDATE directors SET name = ? WHERE id = ?";
+
+        jdbcTemplate.update(sql, director.getName(), directorId);
+
+        Director updatedDirector = getDirectorById(directorId);
+        log.info("Данные режисера с id {} успешно обновлены в базе данных по таблице directors. \n {}",
+                directorId, updatedDirector);
+        return updatedDirector;
+    }
+
+    @Override
+    public Director deleteDirectorById(Integer directorId) {
+        Director currentDirector = getDirectorById(directorId);
+        if (currentDirector == null) {
+            throw new DirectorNotFoundException("Режисер с id " + directorId + " не существует!");
+        }
+        String sqlDeleteDirector = "DELETE FROM directors WHERE id = ?";
+
+        jdbcTemplate.update(sqlDeleteDirector, directorId);
+        log.info("Режисер с ID: {} удален из базы данных в таблице directors",
+                directorId);
+        return currentDirector;
+    }
+
+    @Override
+    public List<Director> getAllDirectors() {
+        String sqlReadQuery = "SELECT * FROM directors";
+        List<Director> directors = jdbcTemplate.query(sqlReadQuery, this::mapRowToDirector);
+        log.info("Получен список режисеров из базы данных по таблице directors. \n {}", directors);
+        return directors;
+    }
+
+    @Override
+    public Director getDirectorById(Integer directorId) {
+        String sql = "SELECT * FROM directors WHERE id = ?";
+        SqlRowSet rows = jdbcTemplate.queryForRowSet(sql, directorId);
+
+        if (rows.next()) {
+            Director director = Director.builder()
+                    .id(rows.getInt("id"))
+                    .name(rows.getString("name"))
+                    .build();
+
+            log.info("Из базы данных получен режисер по ID: {} в таблице directors. \n {}", directorId, director);
+
+            return director;
+        } else {
+            throw new DirectorNotFoundException(String.format("Режисер с id: %d не найден", directorId));
+        }
+    }
+
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Integer filmId = rs.getInt("id");
 
@@ -169,6 +263,14 @@ public class FilmDbStorage implements FilmStorage {
                 .mpa(getRatingById(rs.getInt("rating_id")))
                 .genres(getGenresFromDb(filmId))
                 .usersLikes(getUsersLikedFilmFromDb(filmId))
+                .directors(getDirectorsFromDb(filmId))
+                .build();
+    }
+
+    private Director mapRowToDirector(ResultSet rs, int rowNum) throws SQLException {
+        return Director.builder()
+                .id(rs.getInt("id"))
+                .name(rs.getString("name"))
                 .build();
     }
 
@@ -224,6 +326,46 @@ public class FilmDbStorage implements FilmStorage {
         });
     }
 
+    private void addDirectorsToDb(final Film film) {
+        List<Director> newDirectors = new ArrayList<>(film.getDirectors());
+        Integer filmId = film.getId();
+        List<Director> oldDirectors = getDirectorsFromDb(filmId);
+
+        String sqlDeleteMovieDirector = "DELETE FROM director_movies WHERE director_id = ? and movie_id = ?";
+        jdbcTemplate.batchUpdate(sqlDeleteMovieDirector, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                Director director = oldDirectors.get(i);
+                ps.setInt(1, director.getId());
+                ps.setInt(2, filmId);
+            }
+
+            @Override
+            public int getBatchSize() {
+                return oldDirectors.size();
+            }
+        });
+
+        log.info("Удалена связь режисеров с фильмом по id: {} в таблице director_movies.",
+                film.getId());
+
+        String sql = "INSERT INTO director_movies (director_id, movie_id) VALUES (?, ?)";
+
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                Director director = newDirectors.get(i);
+                ps.setInt(1, director.getId());
+                ps.setInt(2, filmId);
+            }
+
+            @Override
+            public int getBatchSize() {
+                return newDirectors.size();
+            }
+        });
+    }
+
     private Set<FilmGenre> getGenresFromDb(final Integer filmId) {
         String sql = "SELECT g.id, g.name FROM movie_genre mg " +
                 "JOIN genre g ON mg.genre_id = g.id " +
@@ -231,6 +373,14 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY g.id";
 
         return new HashSet<>(jdbcTemplate.query(sql, this::mapRowToGenre, filmId));
+    }
+
+    private List<Director> getDirectorsFromDb(final Integer filmId) {
+        String sql = "SELECT d.id, d.name FROM director_movies dm " +
+                "JOIN directors d ON dm.director_id = d.id " +
+                "WHERE dm.movie_id = ?";
+
+        return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToDirector, filmId));
     }
 
     @Override

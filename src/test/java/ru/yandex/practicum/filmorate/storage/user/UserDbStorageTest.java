@@ -59,6 +59,7 @@ class UserDbStorageTest {
                 .mpa(new FilmRating(1, "G"))
                 .genres(Collections.emptySet())
                 .usersLikes(Collections.emptySet())
+                .directors(Collections.emptyList())
                 .build();
     }
 

@@ -41,7 +41,8 @@ public class ReviewServiceTest {
         HashSet<FilmGenre> testGenres = new HashSet<>();
         testGenres.add(new FilmGenre(1));
         Film film = new Film(0, "Java Developer", "About strong Java developer",
-                LocalDate.parse("1895-12-28"), 60, new FilmRating(1), testGenres, Collections.emptySet());
+                LocalDate.parse("1895-12-28"), 60, new FilmRating(1), testGenres,
+                Collections.emptySet(), Collections.emptyList());
 
         Review review = new Review(0, "Content", true, 666, filmDbStorage.add(film).getId(), 0);
 
@@ -72,7 +73,8 @@ public class ReviewServiceTest {
         HashSet<FilmGenre> testGenres = new HashSet<>();
         testGenres.add(new FilmGenre(1));
         Film film = new Film(0, "Java Developer", "About strong Java developer",
-                LocalDate.parse("1895-12-28"), 60, new FilmRating(1), testGenres, Collections.emptySet());
+                LocalDate.parse("1895-12-28"), 60, new FilmRating(1), testGenres,
+                Collections.emptySet(), Collections.emptyList());
 
         Review review = new Review(0, "Content", true, userDbStorage.addUser(user).getId(),
                 filmDbStorage.add(film).getId(), 0);

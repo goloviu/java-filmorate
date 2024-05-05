@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.exceptions.LikeException;
 import ru.yandex.practicum.filmorate.exceptions.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
@@ -59,6 +60,13 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse reviewNotFoundHandle(ReviewNotFoundException exception) {
         log.warn("Произошла ошибка во время поиска отзыва в базе данных.", exception);
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse directorNotFoundHandle(final DirectorNotFoundException exception) {
+        log.warn("Произошла ошибка во время поиска режисера в базе данных.", exception);
         return new ErrorResponse(exception.getMessage());
     }
 
