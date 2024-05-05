@@ -34,4 +34,6 @@ public interface FilmStorage {
     boolean removeUserLike(final Integer userId, final Integer filmId);
 
     boolean isFilmExist(Integer filmId);
+
+    void remove(Integer filmId);
 }

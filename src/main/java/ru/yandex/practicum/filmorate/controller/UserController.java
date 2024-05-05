@@ -94,4 +94,9 @@ public class UserController {
                 userId);
         return userService.getRecommendedFilms(userId);
     }
+
+    public void deleteUserById(@PathVariable Integer userId) {
+        log.info("Получен DELETE запрос на удаление пользователя по ID: {}", userId);
+        userService.deleteUserById(userId);
+    }
 }

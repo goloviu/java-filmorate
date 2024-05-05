@@ -148,4 +148,11 @@ public class UserService {
         }
         return recommendedFilms;
     }
+
+    public void deleteUserById(Integer userId) {
+        if (!userStorage.isUserExist(userId)) {
+            throw new UserNotFoundException("Пользователь не найден: " + userId);
+        }
+        userStorage.removeUser(userId);
+    }
 }

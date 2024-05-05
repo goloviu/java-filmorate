@@ -4,10 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.exceptions.LikeException;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
@@ -140,5 +137,12 @@ public class FilmService {
         }
         List<Film> commonFilms = filmStorage.getFilmsById(likesIntersection);
         return commonFilms.stream().sorted(filmLikesComparator.reversed()).collect(Collectors.toList());
+    }
+
+    public void deleteFilmById(Integer filmId) {
+        if (!filmStorage.isFilmExist(filmId)) {
+            throw new FilmNotFoundException("Фильм не найден ID: " + filmId);
+        }
+        filmStorage.remove(filmId);
     }
 }

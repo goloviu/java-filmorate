@@ -33,4 +33,6 @@ public interface UserStorage {
                          final Integer entityId);
 
     Map<Integer, List<Integer>> getLikes();
+
+    void removeUser(Integer userId);
 }
