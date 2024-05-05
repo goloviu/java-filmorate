@@ -12,10 +12,15 @@ import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -85,7 +90,7 @@ class FilmDbStorageTest {
         Integer deletedFilmId = filmDbStorage.remove(film3).getId();
         //expect
         String sql = "SELECT COUNT(id) FROM movies";
-        Integer columnNum =  jdbcTemplate.queryForObject(sql, Integer.class);
+        Integer columnNum = jdbcTemplate.queryForObject(sql, Integer.class);
         assertEquals(2, columnNum, "Количество записей больше 2х");
 
         EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class,
@@ -129,6 +134,26 @@ class FilmDbStorageTest {
                 .isNotNull()
                 .usingRecursiveComparison()
                 .isEqualTo(film);
+    }
+
+    @Test
+    void testGetFilmsById_ShouldReturnSavedFilms_WhenFilmIsNotNull() {
+        //given
+        Film film1 = makeFilmWithoutId();
+        Film film2 = makeFilmWithoutId();
+        Integer filmId1 = filmDbStorage.add(film1).getId();
+        Integer filmId2 = filmDbStorage.add(film2).getId();
+        //do
+        Set<Integer> filmsId = new HashSet<>();
+        filmsId.add(filmId1);
+        filmsId.add(filmId2);
+        List<Film> savedFilms = filmDbStorage.getFilmsById(filmsId);
+        //expect
+        assertEquals(2, savedFilms.size(), "Размер списка фильмов не совпадает");
+        assertThat(savedFilms)
+                .isNotNull()
+                .usingRecursiveComparison()
+                .isEqualTo(savedFilms);
     }
 
     @Test

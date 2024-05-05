@@ -16,7 +16,12 @@ import ru.yandex.practicum.filmorate.model.enums.OperationType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Component("userDbStorage")
 @Slf4j
@@ -94,6 +99,17 @@ public class UserDbStorage implements UserStorage {
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, userId);
         rs.next();
         return rs.getInt(1) > 0;
+    }
+
+    @Override
+    public Set<Integer> getUserLikes(Integer userId) {
+        String sql = "SELECT movie_id FROM movie_like WHERE user_id = ?";
+        SqlRowSet srs = jdbcTemplate.queryForRowSet(sql, userId);
+        Set<Integer> userLikes = new HashSet<>();
+        while (srs.next()) {
+            userLikes.add(srs.getInt("movie_id"));
+        }
+        return userLikes;
     }
 
     @Override

@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.enums.OperationType;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface UserStorage {
 
@@ -23,6 +24,8 @@ public interface UserStorage {
     List<User> getAllUsers();
 
     boolean isUserExist(final Integer userId);
+
+    Set<Integer> getUserLikes(final Integer userId);
 
     List<Feed> getFeedByUserId(final Integer userId);
 

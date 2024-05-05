@@ -14,13 +14,18 @@ import ru.yandex.practicum.filmorate.model.FilmRating;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Component("filmDbStorage")
 @Slf4j
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+
 
     @Autowired
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
@@ -78,6 +83,16 @@ public class FilmDbStorage implements FilmStorage {
         log.info("Получен фильм из базы данных по таблице movies. \n {}", film);
         return film;
     }
+
+    @Override
+    public List<Film> getFilmsById(Set<Integer> filmIds) {
+        String sqlParametersPart = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        String sqlReadQuery = String.format("SELECT * FROM movies WHERE id IN (%s)", sqlParametersPart);
+        List<Film> films = jdbcTemplate.query(sqlReadQuery, filmIds.toArray(), this::mapRowToFilm);
+        log.info("Получен список фильмов по id's из базы данных по таблице movies. \n {}", films);
+        return films;
+    }
+
 
     @Override
     public List<Film> getAllFilms() {
