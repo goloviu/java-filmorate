@@ -14,6 +14,8 @@ public interface FilmStorage {
 
     Film remove(final Film film);
 
+    void remove(Integer filmId);
+
     Film update(final Film film);
 
     Film getFilmById(final Integer filmId);
@@ -47,8 +49,6 @@ public interface FilmStorage {
     List<Director> getAllDirectors();
 
     Director getDirectorById(Integer directorId);
-
-    void remove(Integer filmId);
 }
 
 
