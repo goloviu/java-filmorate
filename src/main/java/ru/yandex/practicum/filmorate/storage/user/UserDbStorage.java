@@ -7,14 +7,20 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.OperationType;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Component("userDbStorage")
@@ -106,6 +112,27 @@ public class UserDbStorage implements UserStorage {
         return userLikes;
     }
 
+    @Override
+    public List<Feed> getFeedByUserId(Integer userId) {
+        if (!isUserExist(userId)) {
+            throw new UserNotFoundException("Пользователь не существует по ID: " + userId);
+        }
+        String sqlGetQuery = "SELECT * FROM feed WHERE user_id = ?";
+        List<Feed> userFeed = jdbcTemplate.query(sqlGetQuery, this::mapRowToFeed, userId);
+        log.info("Получен список взаимодействий пользователя. \n {}", userFeed);
+        return userFeed;
+    }
+
+    @Override
+    public boolean saveUserFeed(Integer userId, EventType eventType, OperationType operationType, Integer entityId) {
+        String sqlInsertQuery = "INSERT INTO feed(user_id, event_type_id, operation_id, entity_id) VALUES (?, ?, ?, ?);";
+        jdbcTemplate.update(sqlInsertQuery, userId, eventType.getId(), operationType.getId(), entityId);
+
+        log.info("Фид пользователя ID {} сохранен в базу данных. EventID: {} OperationID: {} EntityID: {}",
+                userId, eventType.getId(), operationType.getId(), entityId);
+        return true;
+    }
+
     private void addToUserFriendsFromDb(User user) {
         Integer userId = user.getId();
         String sql = "SELECT * FROM friends WHERE user_id = ?";
@@ -174,5 +201,47 @@ public class UserDbStorage implements UserStorage {
                 .build();
         addToUserFriendsFromDb(user);
         return user;
+    }
+
+    private Feed mapRowToFeed(ResultSet rs, int rowNum) throws SQLException {
+        return Feed.builder()
+                .eventId(rs.getInt("id"))
+                .userId(rs.getInt("user_id"))
+                .eventType(getFeedEventTypeFromDbById(rs.getInt("event_type_id")))
+                .operation(getFeedOperationFromDbById(rs.getInt("operation_id")))
+                .entityId(rs.getInt("entity_id"))
+                .timestamp(rs.getTimestamp("creation_date").toInstant().toEpochMilli())
+                .build();
+    }
+
+    private EventType getFeedEventTypeFromDbById(final Integer eventId) {
+        String sqlGetQuery = "SELECT name FROM event_types WHERE id = ?";
+        return EventType.valueOf(jdbcTemplate.queryForObject(sqlGetQuery, String.class, eventId));
+    }
+
+    private OperationType getFeedOperationFromDbById(final Integer operationId) {
+        String sqlGetQuery = "SELECT name FROM operation WHERE id = ?";
+        return OperationType.valueOf(jdbcTemplate.queryForObject(sqlGetQuery, String.class, operationId));
+    }
+
+    static Map mapLikesMap(ResultSet rs) throws SQLException {
+        Map<Integer, List<Integer>> mapUserLikes = new HashMap<>();
+        while (rs.next()) {
+            if (mapUserLikes.containsKey(rs.getInt("user_id"))) {
+                List<Integer> films = new ArrayList<>(mapUserLikes.get(rs.getInt("user_id")));
+                films.add(rs.getInt("movie_id"));
+                mapUserLikes.put(rs.getInt("user_id"), films);
+            } else {
+                mapUserLikes.put(rs.getInt("user_id"), List.of(rs.getInt("movie_id")));
+            }
+        }
+        return mapUserLikes;
+    }
+
+    @Override
+    public Map<Integer, List<Integer>> getLikes() {
+        String sql = "SELECT * FROM movie_like ";
+        Map<Integer, List<Integer>> likes = jdbcTemplate.query(sql, UserDbStorage::mapLikesMap);
+        return likes;
     }
 }

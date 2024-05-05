@@ -59,6 +59,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
+        String sqlDeleteGenres = "delete from movie_genre where movie_id = ?";
+        jdbcTemplate.update(sqlDeleteGenres, film.getId());
+
         String sql = "UPDATE movies SET title = ?, description = ?, duration = ?, release_date = ?, rating_id = ? " +
                 "WHERE id = ?";
 

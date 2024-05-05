@@ -5,13 +5,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.OperationType;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,9 +27,12 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage) {
+        this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
 
@@ -48,6 +59,7 @@ public class UserService {
         user.getFriends().add(friendId);
         userStorage.updateUser(user);
         userStorage.updateUser(friend);
+        userStorage.saveUserFeed(userId, EventType.FRIEND, OperationType.ADD, friendId);
         return friend;
     }
 
@@ -61,6 +73,7 @@ public class UserService {
         friend.getFriendsRequests().remove(userId);
 
         userStorage.removeFriendById(userId, otherUserId);
+        userStorage.saveUserFeed(userId, EventType.FRIEND, OperationType.REMOVE, otherUserId);
         return friend;
     }
 
@@ -89,6 +102,10 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    public List<Feed> getFeedByUserId(final Integer userId) {
+        return userStorage.getFeedByUserId(userId);
+    }
+
     public void isValidUser(User user) {
         if (user.getName() == null || user.getName().isEmpty() || user.getName().isBlank()) {
             user.setName(user.getLogin());
@@ -98,5 +115,37 @@ public class UserService {
             log.debug("Дата рождения не может быть в будущем: {}", user);
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
+    }
+
+    public List<Film> getRecommendedFilms(Integer userId) {
+        if (!userStorage.isUserExist(userId)) {
+            throw new UserNotFoundException("Пользователь не найден: " + userId);
+        }
+        Map<Integer, List<Integer>> allLikes = userStorage.getLikes();
+        List<Integer> filmsUserLiked = allLikes.get(userId);
+        Integer maxCoincidence = 0; // подсчет максимального количества совпадающих лайков на фильмах
+        List<Integer> recommendedIdFilms = new ArrayList<>();
+
+        for (Integer otherUserId : allLikes.keySet()) { // для каждого пользователя подсчет совпадающих лайков на фильмах и сохранение максимального
+            if (!otherUserId.equals(userId)) {
+                List<Integer> filmsOtherUserLiked = new ArrayList<>(allLikes.get(otherUserId));
+                filmsOtherUserLiked.retainAll(filmsUserLiked);
+                if (filmsOtherUserLiked.size() > maxCoincidence) {
+                    List<Integer> otherUserCommonLikes = new ArrayList<>(allLikes.get(otherUserId));
+                    otherUserCommonLikes.removeAll(filmsUserLiked);
+                    recommendedIdFilms = new ArrayList<>(otherUserCommonLikes);
+                }
+            }
+        }
+        List<Film> recommendedFilms = new ArrayList<>();
+        if (!recommendedIdFilms.isEmpty()) {
+            List<Film> films = filmStorage.getAllFilms();
+            for (Film film : films) {
+                if (recommendedIdFilms.contains(film.getId())) {
+                    recommendedFilms.add(film);
+                }
+            }
+        }
+        return recommendedFilms;
     }
 }

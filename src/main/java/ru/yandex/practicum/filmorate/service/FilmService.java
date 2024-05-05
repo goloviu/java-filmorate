@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.OperationType;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -66,6 +68,7 @@ public class FilmService {
 
         film.getUsersLikes().add(userId);
         filmStorage.addUserLikeToFilm(userId, filmId);
+        userStorage.saveUserFeed(userId, EventType.LIKE, OperationType.ADD, filmId);
         return new ArrayList<>(film.getUsersLikes());
     }
 
@@ -78,6 +81,7 @@ public class FilmService {
 
         film.getUsersLikes().remove(userId);
         filmStorage.removeUserLike(userId, filmId);
+        userStorage.saveUserFeed(userId, EventType.LIKE, OperationType.REMOVE, filmId);
         return new ArrayList<>(film.getUsersLikes());
     }
 
