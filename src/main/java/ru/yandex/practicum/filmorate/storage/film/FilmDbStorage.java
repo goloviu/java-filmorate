@@ -25,6 +25,8 @@ public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
+    private final Comparator<Film> filmLikesComparator = Comparator.comparing(film -> film.getUsersLikes().size());
+
     @Autowired
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -172,7 +174,7 @@ public class FilmDbStorage implements FilmStorage {
                     .collect(Collectors.toList());
         } else if (sortBy.equals("likes")) {
             films = films.stream()
-                    .sorted((film1, film2) -> (film1.getUsersLikes().size() - film2.getUsersLikes().size()) * -1)
+                    .sorted(filmLikesComparator.reversed())
                     .collect(Collectors.toList());
         }
 
