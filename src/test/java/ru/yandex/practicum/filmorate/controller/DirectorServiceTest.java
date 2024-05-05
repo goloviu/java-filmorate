@@ -29,7 +29,7 @@ public class DirectorServiceTest {
     }
 
     @Test
-    public void testAddDirector() {
+    public void testAddingDirectorToTheDbAndCheckingObjectsForEquality() {
         Director director = Director.builder()
                 .id(1)
                 .name("new director")
@@ -41,7 +41,7 @@ public class DirectorServiceTest {
     }
 
     @Test
-    public void testUpdateDirector() {
+    public void testUpdatedDirectorToTheDbAndCheckingObjectsForEquality() {
         Director director = Director.builder()
                 .id(1)
                 .name("new director")
@@ -60,7 +60,7 @@ public class DirectorServiceTest {
     }
 
     @Test
-    public void testGetAllDirectors() {
+    public void testGetAllDirectorsTheLengthOfTheListsAndTheObjectsMustBeEqual() {
         Director director1 = Director.builder()
                 .id(1)
                 .name("new director1")
@@ -82,7 +82,7 @@ public class DirectorServiceTest {
     }
 
     @Test
-    public void testGetDirectorById() {
+    public void testGetDirectorByIdTheFoundDirectorMustBeEqualToTheAddedOne() {
         Director director = Director.builder()
                 .id(1)
                 .name("new director")
@@ -96,7 +96,7 @@ public class DirectorServiceTest {
     }
 
     @Test
-    public void testDeleteDirectorById() {
+    public void testDeleteDirectorByIdExceptionShouldBeThrownWhenSearchingForADeletedDirector() {
         Director director = Director.builder()
                 .id(1)
                 .name("new director")
