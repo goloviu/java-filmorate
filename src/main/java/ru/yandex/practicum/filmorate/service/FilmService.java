@@ -16,13 +16,10 @@ import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.OperationType;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +41,7 @@ public class FilmService {
 
     public Film add(final Film film) {
         isValidFilm(film);
+        film.setGenres(film.getGenres().stream().sorted(Comparator.comparing(FilmGenre::getId)).collect(Collectors.toCollection(LinkedHashSet::new)));
         return filmStorage.add(film);
     }
 
@@ -167,4 +165,15 @@ public class FilmService {
         List<Film> commonFilms = filmStorage.getFilmsById(likesIntersection);
         return commonFilms.stream().sorted(filmLikesComparator.reversed()).collect(Collectors.toList());
     }
+
+    public void deleteFilmById(Integer filmId) {
+        if (!filmStorage.isFilmExist(filmId)) {
+            throw new FilmNotFoundException("Фильм не найден ID: " + filmId);
+        }
+        filmStorage.remove(filmId);
+    }
 }
+
+
+
+

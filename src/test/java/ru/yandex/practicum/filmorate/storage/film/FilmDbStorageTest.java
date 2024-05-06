@@ -229,4 +229,25 @@ class FilmDbStorageTest {
             assertEquals(rating.getName(), filmRating.getName());
         }
     }
+
+    @Test
+    void testRemoveFilmById_WhenFilmIsNotNullAndExistInTable() {
+        //given
+        Film film1 = makeFilmWithoutId();
+        Film film2 = makeFilmWithoutId();
+        Film film3 = makeFilmWithoutId();
+        filmDbStorage.add(film1);
+        filmDbStorage.add(film2);
+        filmDbStorage.add(film3);
+        //do
+        filmDbStorage.remove(film3.getId());
+        //expect
+        String sql = "SELECT COUNT(id) FROM movies";
+        Integer columnNum =  jdbcTemplate.queryForObject(sql, Integer.class);
+        assertEquals(2, columnNum, "Количество записей больше 2х");
+
+        EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class,
+                () -> filmDbStorage.getFilmById(3), "Исключение не выброшено");
+        assertEquals("Incorrect result size: expected 1, actual 0", exception.getMessage());
+    }
 }

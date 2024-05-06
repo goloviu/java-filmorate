@@ -244,4 +244,13 @@ public class UserDbStorage implements UserStorage {
         Map<Integer, List<Integer>> likes = jdbcTemplate.query(sql, UserDbStorage::mapLikesMap);
         return likes;
     }
+
+    @Override
+    public void removeUser(Integer userId) {
+        String sqlDeleteUser = "DELETE FROM users WHERE id = ?";
+
+        jdbcTemplate.update(sqlDeleteUser, userId);
+        log.info("Пользователь по ID: {} и инфомрация о друзьях была удалена из базы данных в таблицах users, friends, movie_like",
+                userId);
+    }
 }

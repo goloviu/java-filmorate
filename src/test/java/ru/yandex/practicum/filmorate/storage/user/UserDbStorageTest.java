@@ -306,4 +306,29 @@ class UserDbStorageTest {
         assertEquals(userId, feedFromDb.getUserId());
         assertEquals(2, feedFromDb.getEntityId());
     }
+
+    @Test
+    void testRemoveUserById_ShouldRemoveUserId3_WhenUserIsNotNullAndExistInTable() {
+        //given
+        User user1 = makeUserWithoutId();
+        User user2 = makeUserWithoutId();
+        user2.setEmail("test@mail.test");
+        user2.setLogin("foo");
+        User user3 = makeUserWithoutId();
+        user3.setEmail("test2@mail.test");
+        user3.setLogin("bar");
+        //do
+        userStorage.addUser(user1);
+        userStorage.addUser(user2);
+        userStorage.addUser(user3);
+        userStorage.removeUser(user3.getId());
+        //expect
+        String sql = "SELECT COUNT(id) FROM users";
+        Integer columnNum =  jdbcTemplate.queryForObject(sql, (rs, rowNum) -> (rs.getInt(1)));
+        assertEquals(2, columnNum, "Количество записей больше 2х");
+
+        EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class,
+                () -> userStorage.getUserById(3), "Исключение не выброшено");
+        assertEquals("Incorrect result size: expected 1, actual 0", exception.getMessage());
+    }
 }
