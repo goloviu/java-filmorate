@@ -84,16 +84,12 @@ public class FilmService {
         return new ArrayList<>(film.getUsersLikes());
     }
 
-    public List<Film> getPopularFilmsByLikes(final Integer numberOfFilms) {
+    public List<Film> getPopularFilms(final Integer numberOfFilms, final Integer genreId, final Integer year) {
         if (numberOfFilms <= 0) {
             throw new IncorrectParameterException("Указано неверное количество фильмов, для вывода топа по лайкам: "
                     + numberOfFilms);
         }
-
-        return filmStorage.getAllFilms().stream()
-                .sorted(filmLikesComparator.reversed())
-                .limit(numberOfFilms)
-                .collect(Collectors.toList());
+        return filmStorage.getPopularFilms(numberOfFilms, genreId, year);
     }
 
     public Film getFilmById(final Integer filmId) {
