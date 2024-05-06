@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exceptions.LikeException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
@@ -14,12 +15,17 @@ import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.OperationType;
+import ru.yandex.practicum.filmorate.model.enums.SearchType;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -167,6 +173,23 @@ public class FilmService {
             throw new FilmNotFoundException("Фильм не найден ID: " + filmId);
         }
         filmStorage.remove(filmId);
+    }
+
+    public List<Film> searchFilms(String query, Set<SearchType> searchTypes) {
+        Set<Film> foundFilms = new HashSet<>();
+        searchTypes.forEach(searchType -> {
+            switch (searchType) {
+                case TITLE: {
+                    foundFilms.addAll(filmStorage.searchFilmsByTitleSubstring(query));
+                    break;
+                }
+                case DIRECTOR: {
+                    foundFilms.addAll(filmStorage.searchFilmsByDirectorNameSubstring(query));
+                    break;
+                }
+            }
+        });
+        return foundFilms.stream().sorted(filmLikesComparator.reversed()).collect(Collectors.toList());
     }
 }
 

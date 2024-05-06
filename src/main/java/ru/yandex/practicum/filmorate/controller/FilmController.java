@@ -12,10 +12,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.SearchType;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/films")
@@ -71,7 +75,7 @@ public class FilmController {
                                              @RequestParam(defaultValue = "-1") Integer genreId,
                                              @RequestParam(defaultValue = "-1") Integer year) {
         log.info("Получен GET запрос на получения популярных по лайкам фильмов с ограничением вывода '{}' фильмов, " +
-                        "жанр ID {}, год {}", count, genreId, year);
+                "жанр ID {}, год {}", count, genreId, year);
         return filmService.getPopularFilms(count, genreId, year);
     }
 
@@ -93,6 +97,13 @@ public class FilmController {
     public void deleteFilmById(@PathVariable Integer filmId) {
         log.info("Получен DELETE запрос на удаление фильма по ID: {}", filmId);
         filmService.deleteFilmById(filmId);
+    }
+
+    @GetMapping("/search")
+    public List<Film> searchFilms(@RequestParam String query, @RequestParam String by) {
+        log.info("Получен GET запрос на поиск фильмов по ключевому слову {} в полях : {}", query, by);
+        Set<SearchType> searchTypes = Arrays.stream(by.split(",")).map(SearchType::valueOfLabel).collect(Collectors.toSet());
+        return filmService.searchFilms(query, searchTypes);
     }
 
 }
