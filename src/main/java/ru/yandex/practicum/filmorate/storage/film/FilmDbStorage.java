@@ -137,7 +137,7 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         return films.stream()
-                .sorted((film1, film2) -> (film1.getUsersLikes().size() - film2.getUsersLikes().size()) * -1)
+                .sorted(filmLikesComparator.reversed())
                 .limit(numberOfFilms)
                 .collect(Collectors.toList());
     }
