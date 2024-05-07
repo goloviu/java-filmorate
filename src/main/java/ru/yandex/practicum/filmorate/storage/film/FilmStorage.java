@@ -51,6 +51,10 @@ public interface FilmStorage {
     List<Director> getAllDirectors();
 
     Director getDirectorById(Integer directorId);
+
+    List<Film> searchFilmsByTitleSubstring(String substring);
+
+    List<Film> searchFilmsByDirectorNameSubstring(String substring);
 }
 
 

@@ -16,7 +16,12 @@ import ru.yandex.practicum.filmorate.model.FilmRating;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component("filmDbStorage")
@@ -287,6 +292,28 @@ public class FilmDbStorage implements FilmStorage {
         } else {
             throw new DirectorNotFoundException(String.format("Режисер с id: %d не найден", directorId));
         }
+    }
+
+    @Override
+    public List<Film> searchFilmsByTitleSubstring(String substring) {
+        String lowerCaseSubstringPattern = "%" + substring.toLowerCase() + "%";
+        String sql = "SELECT * FROM movies WHERE LOWER(title) LIKE ?";
+        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm, lowerCaseSubstringPattern);
+        log.info("Получен список фильмов из базы данных по таблице movies c поиском по title. \n {}", films);
+        return films;
+    }
+
+    @Override
+    public List<Film> searchFilmsByDirectorNameSubstring(String substring) {
+        String lowerCaseSubstringPattern = "%" + substring.toLowerCase() + "%";
+        String sql = "SELECT m.id, m.title, m.description, m.duration, m.release_date, m.rating_id " +
+                "FROM movies AS m " +
+                "JOIN director_movies AS dm " +
+                "  ON m.id = dm.movie_id " +
+                "WHERE dm.director_id IN (SELECT d.id FROM directors AS d WHERE LOWER(d.name) LIKE ?)";
+        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm, lowerCaseSubstringPattern);
+        log.info("Получен список фильмов из базы данных по таблице movies c поиском по title. \n {}", films);
+        return films;
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {

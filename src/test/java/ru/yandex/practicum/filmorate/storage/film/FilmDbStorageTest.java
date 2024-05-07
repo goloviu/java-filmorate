@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
@@ -22,6 +23,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @JdbcTest
@@ -47,6 +49,26 @@ class FilmDbStorageTest {
                 .friends(Collections.emptySet())
                 .friendsRequests(Collections.emptySet())
                 .build();
+    }
+
+    private Director makeDirectorWithoutId() {
+        return Director.builder()
+                .name(" SEaRchEd ")
+                .build();
+    }
+
+    private void makeEnvironmentForSearchFilm() {
+        Film filmTitleSearched = makeFilmWithoutId();
+        filmTitleSearched.setName(" SEaRchEd ");
+        Film filmDirectorSearched = makeFilmWithoutId();
+        List<Director> directors = new ArrayList<>();
+        Director director = filmDbStorage.addDirector(makeDirectorWithoutId());
+        directors.add(director);
+        filmDirectorSearched.setDirectors(directors);
+        Film notFoundFilm = makeFilmWithoutId();
+        filmDbStorage.add(filmTitleSearched);
+        filmDbStorage.add(filmDirectorSearched);
+        filmDbStorage.add(notFoundFilm);
     }
 
     private List<Film> makeEnvironmentForPopularFilmTest() {
@@ -137,6 +159,19 @@ class FilmDbStorageTest {
                 new FilmGenre(4, "Триллер"),
                 new FilmGenre(5, "Документальный"),
                 new FilmGenre(6, "Боевик"));
+    }
+
+    @Test
+    void testSearchFilms_ShouldSearch2Films_WhenSearchedByQuerySEaRchEd() {
+        //given
+        makeEnvironmentForSearchFilm();
+        //do
+        List<Film> filmsByTitle = filmDbStorage.searchFilmsByTitleSubstring("searched");
+        List<Film> filmsByDirector = filmDbStorage.searchFilmsByDirectorNameSubstring("searched");
+        //expect
+        assertEquals(filmsByTitle.size(), 1);
+        assertEquals(filmsByDirector.size(), 1);
+        assertNotEquals(filmsByTitle.get(0), filmsByDirector.get(0));
     }
 
     @Test
@@ -318,7 +353,7 @@ class FilmDbStorageTest {
         filmDbStorage.remove(film3.getId());
         //expect
         String sql = "SELECT COUNT(id) FROM movies";
-        Integer columnNum =  jdbcTemplate.queryForObject(sql, Integer.class);
+        Integer columnNum = jdbcTemplate.queryForObject(sql, Integer.class);
         assertEquals(2, columnNum, "Количество записей больше 2х");
 
         EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class,
