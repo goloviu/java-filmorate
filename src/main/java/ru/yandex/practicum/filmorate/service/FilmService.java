@@ -67,10 +67,6 @@ public class FilmService {
             throw new UserNotFoundException("Пользователь не найден: " + userId);
         }
 
-        if (film.getUsersLikes().contains(userId)) {
-            throw new LikeException("Пользователь с ID:" + userId + "уже поставил лайк этому фильму");
-        }
-
         film.getUsersLikes().add(userId);
         filmStorage.addUserLikeToFilm(userId, filmId);
         userStorage.saveUserFeed(userId, EventType.LIKE, OperationType.ADD, filmId);
