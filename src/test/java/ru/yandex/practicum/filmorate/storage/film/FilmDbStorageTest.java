@@ -7,15 +7,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -23,10 +32,103 @@ class FilmDbStorageTest {
 
     private final JdbcTemplate jdbcTemplate;
     private FilmDbStorage filmDbStorage;
+    private UserDbStorage userDbStorage;
 
     @BeforeEach
     private void makeNewFilmStorage() {
         this.filmDbStorage = new FilmDbStorage(jdbcTemplate);
+        this.userDbStorage = new UserDbStorage(jdbcTemplate);
+    }
+
+    private User makeUserWithoutId() {
+        return User.builder()
+                .name("Test name")
+                .login("Test login")
+                .email("foo@bar.com")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .friends(Collections.emptySet())
+                .friendsRequests(Collections.emptySet())
+                .build();
+    }
+
+    private Director makeDirectorWithoutId() {
+        return Director.builder()
+                .name(" SEaRchEd ")
+                .build();
+    }
+
+    private void makeEnvironmentForSearchFilm() {
+        Film filmTitleSearched = makeFilmWithoutId();
+        filmTitleSearched.setName(" SEaRchEd ");
+        Film filmDirectorSearched = makeFilmWithoutId();
+        List<Director> directors = new ArrayList<>();
+        Director director = filmDbStorage.addDirector(makeDirectorWithoutId());
+        directors.add(director);
+        filmDirectorSearched.setDirectors(directors);
+        Film notFoundFilm = makeFilmWithoutId();
+        filmDbStorage.add(filmTitleSearched);
+        filmDbStorage.add(filmDirectorSearched);
+        filmDbStorage.add(notFoundFilm);
+    }
+
+    private List<Film> makeEnvironmentForPopularFilmTest() {
+        HashSet<FilmGenre> genres = new HashSet<>();
+        genres.add(new FilmGenre(1, "Комедия"));
+
+        User user1 = makeUserWithoutId();
+        User user2 = makeUserWithoutId();
+        user2.setEmail("test@mail.test");
+        user2.setLogin("foo");
+        User user3 = makeUserWithoutId();
+        user3.setEmail("test2@mail.test");
+        user3.setLogin("bar");
+
+        userDbStorage.addUser(user1);
+        userDbStorage.addUser(user2);
+        userDbStorage.addUser(user3);
+
+        Film film1 = makeFilmWithoutId();
+
+        Film film2 = makeFilmWithoutId(); // Фильм с 2я лайками
+        film2.setName("Test2");
+        film2.setReleaseDate(LocalDate.of(2023, 04, 01));
+        film2.setGenres(genres);
+        HashSet<Integer> film2Likes = new HashSet<>();
+        film2Likes.add(user1.getId());
+        film2Likes.add(user2.getId());
+        film2.setUsersLikes(film2Likes);
+
+        Film film3 = makeFilmWithoutId();
+        film3.setName("Test3");
+        film3.setReleaseDate(LocalDate.of(2022, 03, 01));
+        film3.setGenres(genres);
+
+        Film film4 = makeFilmWithoutId(); // Фильм с 3я лайками
+        film4.setName("Test4");
+        film4.setReleaseDate(LocalDate.of(2022, 04, 01));
+        film4.setGenres(genres);
+        HashSet<Integer> film4Likes = new HashSet<>();
+        film4Likes.add(user1.getId());
+        film4Likes.add(user2.getId());
+        film4Likes.add(user3.getId());
+        film4.setUsersLikes(film4Likes);
+
+        Film film5 = makeFilmWithoutId();
+        film5.setName("Test5");
+
+        filmDbStorage.add(film1);
+        filmDbStorage.add(film2);
+        filmDbStorage.add(film3);
+        filmDbStorage.add(film4);
+        filmDbStorage.add(film5);
+
+        filmDbStorage.addUserLikeToFilm(user1.getId(), film4.getId());
+        filmDbStorage.addUserLikeToFilm(user2.getId(), film4.getId());
+        filmDbStorage.addUserLikeToFilm(user3.getId(), film4.getId());
+
+        filmDbStorage.addUserLikeToFilm(user1.getId(), film2.getId());
+        filmDbStorage.addUserLikeToFilm(user2.getId(), film2.getId());
+        return new ArrayList<>(List.of(film1, film2, film3, film4, film5));
     }
 
     private Film makeFilmWithoutId() {
@@ -38,6 +140,7 @@ class FilmDbStorageTest {
                 .mpa(new FilmRating(1, "G"))
                 .genres(Collections.emptySet())
                 .usersLikes(Collections.emptySet())
+                .directors(Collections.emptyList())
                 .build();
     }
 
@@ -56,6 +159,19 @@ class FilmDbStorageTest {
                 new FilmGenre(4, "Триллер"),
                 new FilmGenre(5, "Документальный"),
                 new FilmGenre(6, "Боевик"));
+    }
+
+    @Test
+    void testSearchFilms_ShouldSearch2Films_WhenSearchedByQuerySEaRchEd() {
+        //given
+        makeEnvironmentForSearchFilm();
+        //do
+        List<Film> filmsByTitle = filmDbStorage.searchFilmsByTitleSubstring("searched");
+        List<Film> filmsByDirector = filmDbStorage.searchFilmsByDirectorNameSubstring("searched");
+        //expect
+        assertEquals(filmsByTitle.size(), 1);
+        assertEquals(filmsByDirector.size(), 1);
+        assertNotEquals(filmsByTitle.get(0), filmsByDirector.get(0));
     }
 
     @Test
@@ -82,14 +198,14 @@ class FilmDbStorageTest {
         filmDbStorage.add(film2);
         filmDbStorage.add(film3);
         //do
-        filmDbStorage.remove(film3);
+        Integer deletedFilmId = filmDbStorage.remove(film3).getId();
         //expect
         String sql = "SELECT COUNT(id) FROM movies";
-        Integer columnNum =  jdbcTemplate.queryForObject(sql, (rs, rowNum) -> (rs.getInt(1)));
+        Integer columnNum = jdbcTemplate.queryForObject(sql, Integer.class);
         assertEquals(2, columnNum, "Количество записей больше 2х");
 
         EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class,
-                () -> filmDbStorage.getFilmById(3), "Исключение не выброшено");
+                () -> filmDbStorage.getFilmById(deletedFilmId), "Исключение не выброшено");
         assertEquals("Incorrect result size: expected 1, actual 0", exception.getMessage());
     }
 
@@ -129,6 +245,26 @@ class FilmDbStorageTest {
                 .isNotNull()
                 .usingRecursiveComparison()
                 .isEqualTo(film);
+    }
+
+    @Test
+    void testGetFilmsById_ShouldReturnSavedFilms_WhenFilmIsNotNull() {
+        //given
+        Film film1 = makeFilmWithoutId();
+        Film film2 = makeFilmWithoutId();
+        Integer filmId1 = filmDbStorage.add(film1).getId();
+        Integer filmId2 = filmDbStorage.add(film2).getId();
+        //do
+        Set<Integer> filmsId = new HashSet<>();
+        filmsId.add(filmId1);
+        filmsId.add(filmId2);
+        List<Film> savedFilms = filmDbStorage.getFilmsById(filmsId);
+        //expect
+        assertEquals(2, savedFilms.size(), "Размер списка фильмов не совпадает");
+        assertThat(savedFilms)
+                .isNotNull()
+                .usingRecursiveComparison()
+                .isEqualTo(savedFilms);
     }
 
     @Test
@@ -202,5 +338,74 @@ class FilmDbStorageTest {
             FilmRating filmRating = filmDbStorage.getRatingById(rating.getId());
             assertEquals(rating.getName(), filmRating.getName());
         }
+    }
+
+    @Test
+    void testRemoveFilmById_WhenFilmIsNotNullAndExistInTable() {
+        //given
+        Film film1 = makeFilmWithoutId();
+        Film film2 = makeFilmWithoutId();
+        Film film3 = makeFilmWithoutId();
+        filmDbStorage.add(film1);
+        filmDbStorage.add(film2);
+        filmDbStorage.add(film3);
+        //do
+        filmDbStorage.remove(film3.getId());
+        //expect
+        String sql = "SELECT COUNT(id) FROM movies";
+        Integer columnNum = jdbcTemplate.queryForObject(sql, Integer.class);
+        assertEquals(2, columnNum, "Количество записей больше 2х");
+
+        EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class,
+                () -> filmDbStorage.getFilmById(3), "Исключение не выброшено");
+        assertEquals("Incorrect result size: expected 1, actual 0", exception.getMessage());
+    }
+
+    @Test
+    void testGetPopularFilms_ShouldReturnPopularFilmsByGenreAndYear_WhenFilmsExistsInTable() {
+        //given
+        List<Film> filmsSavedToDb = makeEnvironmentForPopularFilmTest();
+        // do
+        List<Film> expectFilms = List.of(filmsSavedToDb.get(3), filmsSavedToDb.get(2));
+        List<Film> popularFilmsFromDb = filmDbStorage.getPopularFilms(10, 1, 2022);
+        // expect
+        assertEquals(expectFilms.size(), popularFilmsFromDb.size(), "Количество популярных фильмов не совпадают");
+        assertEquals(expectFilms, popularFilmsFromDb, "Фильмы отсортированы неверно");
+        assertThat(expectFilms)
+                .isNotNull()
+                .usingRecursiveComparison()
+                .isEqualTo(popularFilmsFromDb);
+    }
+
+    @Test
+    void testGetPopularFilms_ShouldReturnPopularFilmsByGenre_WhenFilmsExistsInTable() {
+        //given
+        List<Film> filmsSavedToDb = makeEnvironmentForPopularFilmTest();
+        // do
+        List<Film> expectFilms = List.of(filmsSavedToDb.get(3), filmsSavedToDb.get(1), filmsSavedToDb.get(2));
+        List<Film> popularFilmsFromDb = filmDbStorage.getPopularFilms(10, 1, -1);
+        // expect
+        assertEquals(expectFilms.size(), popularFilmsFromDb.size(), "Количество популярных фильмов не совпадают");
+        assertEquals(expectFilms, popularFilmsFromDb, "Фильмы отсортированы неверно");
+        assertThat(expectFilms)
+                .isNotNull()
+                .usingRecursiveComparison()
+                .isEqualTo(popularFilmsFromDb);
+    }
+
+    @Test
+    void testGetPopularFilms_ShouldReturnPopularFilmsByYear_WhenFilmsExistsInTable() {
+        //given
+        List<Film> filmsSavedToDb = makeEnvironmentForPopularFilmTest();
+        // do
+        List<Film> expectFilms = List.of(filmsSavedToDb.get(3), filmsSavedToDb.get(2));
+        List<Film> popularFilmsFromDb = filmDbStorage.getPopularFilms(10, -1, 2022);
+        // expect
+        assertEquals(expectFilms.size(), popularFilmsFromDb.size(), "Количество популярных фильмов не совпадают");
+        assertEquals(expectFilms, popularFilmsFromDb, "Фильмы отсортированы неверно");
+        assertThat(expectFilms)
+                .isNotNull()
+                .usingRecursiveComparison()
+                .isEqualTo(popularFilmsFromDb);
     }
 }

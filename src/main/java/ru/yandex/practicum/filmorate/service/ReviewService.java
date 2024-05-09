@@ -1,0 +1,86 @@
+package ru.yandex.practicum.filmorate.service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.OperationType;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+
+import java.util.List;
+
+@Service
+@Slf4j
+public class ReviewService {
+    private final ReviewDbStorage reviewDbStorage;
+    private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
+
+    @Autowired
+    public ReviewService(ReviewDbStorage reviewDbStorage,
+                         @Qualifier("userDbStorage") UserStorage userStorage,
+                         @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+        this.reviewDbStorage = reviewDbStorage;
+        this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
+    }
+
+    public Review addReview(Review review) {
+        checkValid(review);
+        Review savedToDbReview = reviewDbStorage.add(review);
+        userStorage.saveUserFeed(review.getUserId(), EventType.REVIEW, OperationType.ADD, savedToDbReview.getReviewId());
+        return savedToDbReview;
+    }
+
+    public Review updateReview(Review review) {
+        checkValid(review);
+        Review updatedReview = reviewDbStorage.update(review);
+        userStorage.saveUserFeed(updatedReview.getUserId(), EventType.REVIEW, OperationType.UPDATE, updatedReview.getReviewId());
+        return updatedReview;
+    }
+
+    public Review deleteReviewById(Integer reviewId) {
+        Review removedReview = reviewDbStorage.remove(reviewId);
+        userStorage.saveUserFeed(removedReview.getUserId(), EventType.REVIEW, OperationType.REMOVE, removedReview.getReviewId());
+        return removedReview;
+    }
+
+    public Review getReviewById(Integer reviewId) {
+        return reviewDbStorage.getReviewById(reviewId);
+    }
+
+    public List<Review> getReviewsByFilmId(Integer count, Integer filmId) {
+        return reviewDbStorage.getReviewsByFilmId(count, filmId);
+    }
+
+    public Review addLikeToReview(Integer reviewId, Integer userId) {
+        return reviewDbStorage.addUserLikeToReview(userId, reviewId);
+    }
+
+    public Review addDislikeToReview(Integer reviewId, Integer userId) {
+        return reviewDbStorage.addUserDislikeToReview(userId, reviewId);
+    }
+
+    public Review deleteLikeToReview(Integer reviewId, Integer userId) {
+        return reviewDbStorage.removeUserLike(userId, reviewId);
+    }
+
+    public Review deleteDislikeToReview(Integer reviewId, Integer userId) {
+        return reviewDbStorage.removeUserDislike(userId, reviewId);
+    }
+
+    public void checkValid(Review review) {
+        if (!userStorage.isUserExist(review.getUserId())) {
+            throw new UserNotFoundException("Пользователь не найден: " + review.getUserId());
+        }
+        if (!filmStorage.isFilmExist(review.getFilmId())) {
+            throw new FilmNotFoundException("Фильм не найден: " + review.getFilmId());
+        }
+    }
+}
