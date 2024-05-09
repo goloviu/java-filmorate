@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/reviews")
@@ -47,11 +46,10 @@ public class ReviewsController {
     }
 
     @GetMapping
-    public List<Review> getReviewsByFilmId(@RequestParam Map<String, String> requestParams) {
-        log.info("Получен GET запрос на нахождения всех {} отзывов по ID фильма: {}",
-                requestParams.getOrDefault("count", "10"),
-                requestParams.getOrDefault("filmId", "-1"));
-        return reviewService.getReviewsByFilmId(requestParams);
+    public List<Review> getReviewsByFilmId(@RequestParam(defaultValue = "10") Integer count,
+                                           @RequestParam(defaultValue = "-1") Integer filmId) {
+        log.info("Получен GET запрос на нахождения всех {} отзывов по ID фильма: {}", count, filmId);
+        return reviewService.getReviewsByFilmId(count, filmId);
     }
 
     @PutMapping("/{reviewId}/like/{userId}")

@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -56,9 +55,7 @@ public class ReviewService {
         return reviewDbStorage.getReviewById(reviewId);
     }
 
-    public List<Review> getReviewsByFilmId(Map<String, String> requestParams) {
-        Integer count = Integer.parseInt(requestParams.getOrDefault("count", "10"));
-        Integer filmId = Integer.parseInt(requestParams.getOrDefault("filmId", "-1"));
+    public List<Review> getReviewsByFilmId(Integer count, Integer filmId) {
         return reviewDbStorage.getReviewsByFilmId(count, filmId);
     }
 
