@@ -102,7 +102,7 @@ public class FilmController {
     @GetMapping("/search")
     public List<Film> searchFilms(@RequestParam String query, @RequestParam String by) {
         log.info("Получен GET запрос на поиск фильмов по ключевому слову {} в полях : {}", query, by);
-        Set<SearchType> searchTypes = Arrays.stream(by.split(",")).map(SearchType::valueOfLabel).collect(Collectors.toSet());
+        Set<SearchType> searchTypes = Arrays.stream(by.split(",")).map(String::toUpperCase).map(SearchType::valueOf).collect(Collectors.toSet());
         return filmService.searchFilms(query, searchTypes);
     }
 
