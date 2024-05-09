@@ -40,7 +40,7 @@ public interface FilmStorage {
 
     boolean isFilmExist(Integer filmId);
 
-    List<Film> getDirectorFilms(Integer directorId, String sortBy);
+    List<Film> getDirectorFilms(Integer directorId);
 
     Director addDirector(Director director);
 

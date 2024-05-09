@@ -203,7 +203,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getDirectorFilms(Integer directorId, String sortBy) {
+    public List<Film> getDirectorFilms(Integer directorId) {
         String sqlReadQuery = "SELECT m.id, m.title, m.description, m.duration, m.release_date, m.rating_id " +
                 "FROM movies AS m " +
                 "JOIN director_movies AS dm " +
@@ -211,18 +211,7 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE dm.director_id = ?;";
         List<Film> films = jdbcTemplate.query(sqlReadQuery, this::mapRowToFilm, directorId);
 
-        if (sortBy.equals("year")) {
-            films = films.stream()
-                    .sorted(Comparator.comparing(Film::getReleaseDate))
-                    .collect(Collectors.toList());
-        } else if (sortBy.equals("likes")) {
-            films = films.stream()
-                    .sorted(filmLikesComparator.reversed())
-                    .collect(Collectors.toList());
-        }
-
-        log.info("Получены фильмы из базы данных из таблицы movies для режисера с id {}. Отсортированы по {} \n {}",
-                directorId, sortBy, films);
+        log.info("Получены фильмы из базы данных из таблицы movies для режисера с id {}.", directorId);
         return films;
     }
 

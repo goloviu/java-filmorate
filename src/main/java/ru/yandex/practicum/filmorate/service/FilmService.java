@@ -123,7 +123,22 @@ public class FilmService {
 
     public List<Film> getDirectorFilms(Integer directorId, String sortBy) {
         log.info("Найденный режисер: {}", filmStorage.getDirectorById(directorId));
-        return filmStorage.getDirectorFilms(directorId, sortBy);
+
+        List<Film> films = filmStorage.getDirectorFilms(directorId);
+
+        if (sortBy.equals("year")) {
+            films = films.stream()
+                    .sorted(Comparator.comparing(Film::getReleaseDate))
+                    .collect(Collectors.toList());
+        } else if (sortBy.equals("likes")) {
+            films = films.stream()
+                    .sorted(filmLikesComparator.reversed())
+                    .collect(Collectors.toList());
+        }
+
+        log.info("Полученные фильмы отсортированы по {} \n {}", sortBy, films);
+
+        return films;
     }
 
     public Director addDirector(Director director) {
