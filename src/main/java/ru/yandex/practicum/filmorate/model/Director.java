@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-@NoArgsConstructor // для сериализации Json в объект
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Director {

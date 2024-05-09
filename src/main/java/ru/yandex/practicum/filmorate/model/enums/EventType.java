@@ -1,11 +1,14 @@
 package ru.yandex.practicum.filmorate.model.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum EventType {
     LIKE(1),
     REVIEW(2),
     FRIEND(3);
 
-    Integer id;
+    private Integer id;
 
     EventType(Integer id) {
         this.id = id;
@@ -13,9 +16,5 @@ public enum EventType {
 
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 }

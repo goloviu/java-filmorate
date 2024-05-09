@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum SearchType {
     DIRECTOR("director"),
     TITLE("title");
-    String label;
+    private String label;
 
     SearchType(String label) {
         this.label = label;

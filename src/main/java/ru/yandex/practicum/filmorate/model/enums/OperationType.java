@@ -1,11 +1,14 @@
 package ru.yandex.practicum.filmorate.model.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum OperationType {
     ADD(1),
     REMOVE(2),
     UPDATE(3);
 
-    Integer id;
+    private Integer id;
 
     OperationType(Integer id) {
         this.id = id;
@@ -13,9 +16,5 @@ public enum OperationType {
 
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 }
